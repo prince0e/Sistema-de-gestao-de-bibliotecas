@@ -1,12 +1,20 @@
 #include <stdio.h> //biblioteca para entrada e saida de dados
 #include <stdlib.h> //biblioteca para chamadas no sistema e gerenciamento de memória
 
+//Macros para definir os tamanhos dos campos do struct Livro
 #define TAM_ISBN 30
 #define TAM_TITULO 50
 #define TAM_AUTOR 50
 #define TAM_PUBLICADOR 50
 #define TAM_CATEGORIA 30
 #define TAM_LOCALIZACAO 20
+
+//Macros para definir os tamanhos dos campos do struct Usuario
+#define TAM_ID 20
+#define TAM_NOME 50
+#define TAM_EMAIL 50
+#define TAM_SENHA 20
+
 
 typedef struct {
   char isbn[TAM_ISBN];
@@ -19,6 +27,13 @@ typedef struct {
   int totalCopias;
   char localizacao[TAM_LOCALIZACAO];
 } Livro;
+
+typedef struct {
+  char id[TAM_ID];
+  char nome[TAM_NOME];
+  char email[TAM_EMAIL];
+  char senha[TAM_SENHA];
+} Usuario;
 
 void menuInicial() {
   printf("\
