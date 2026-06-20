@@ -17,41 +17,43 @@
 
 
 typedef struct {
-  char isbn[TAM_ISBN];
-  char titulo[TAM_TITULO];
-  char autor[TAM_AUTOR];
-  char publicador[TAM_PUBLICADOR];
-  char categoria[TAM_CATEGORIA];
-  int anoPublicacao;
-  int quantidadeDisponivel;
-  int totalCopias;
-  char localizacao[TAM_LOCALIZACAO];
+	char isbn[TAM_ISBN];
+	char titulo[TAM_TITULO];
+	char autor[TAM_AUTOR];
+	char publicador[TAM_PUBLICADOR];
+	char categoria[TAM_CATEGORIA];
+	int anoPublicacao;
+	int quantidadeDisponivel;
+	int totalCopias;
+	char localizacao[TAM_LOCALIZACAO];
 } Livro;
 
 typedef struct {
-  char id[TAM_ID];
-  char nome[TAM_NOME];
-  char email[TAM_EMAIL];
-  char senha[TAM_SENHA];
+	char id[TAM_ID];
+	char nome[TAM_NOME];
+	char email[TAM_EMAIL];
+	char senha[TAM_SENHA];
 } Usuario;
 
+Usuario* encontrarUsuarioPeloId() {
+	char id[TAM_ID];
+	printf("Digite o ID:");
+	fgets()
+}
+
 void menuInicial() {
-  printf("\
+	printf("\
 ╔════════════════════════════════════════════════╗\n\
 ║ Bem vindo ao sistema de gestão de bibliotecas  ║\n\
-╠════════════════════════════════════════════════╣\n\
-║ 1. Entrar como administrador                   ║\n\
-║ 2. Entrar como bibliotecário                   ║\n\
-║ 3. Entrar como leitor                          ║\n\
 ╚════════════════════════════════════════════════╝\
-  ");
+		");
 }
 
 int main() {
-  menuInicial();
+	menuInicial();
 
 
-  printf("\n\nObrigado por usar sistema de gestao de bibliotecas!");
+	printf("\n\nObrigado por usar sistema de gestao de bibliotecas!");
 
-  return 0;
+	return 0;
 }
