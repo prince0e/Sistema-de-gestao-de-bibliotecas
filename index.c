@@ -1,28 +1,26 @@
-// sistema_biblioteca.h - Arquivo de cabeçalho principal
 #ifndef SISTEMA_BIBLIOTECA_H
 #define SISTEMA_BIBLIOTECA_H
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <ctype.h>
+#include <stdio.h> //Biblioteca para entrada e saída de dados
+#include <stdlib.h> //biblioteca para chamadas no sistema e manipulação de memória
+#include <string.h>//biblioteca para operações com strings
+#include <time.h>//biblioteca para operações com tempo
+#include <ctype.h>//biblioteca para clasdificar caracteres da string
 
 // Constantes para livros
-#define MAX_ISBN 30
-#define MAX_TITULO 100
-#define MAX_AUTOR 100
-#define MAX_EDITORA 50
-#define MAX_CATEGORIA 30
-#define MAX_LOCALIZACAO 20
+#define TAM_ISBN 30
+#define TAM_TITULO 100
+#define TAM_AUTOR 100
+#define TAM_EDITORA 50
+#define TAM_CATEGORIA 30
+#define TAM_LOCALIZACAO 20
 
 //Constantes para usuários
-#define MAX_ID 20
-#define MAX_NOME 50
-#define MAX_EMAIL 50
-#define MAX_TELEFONE 15
+#define TAM_ID 20
+#define TAM_NOME 50
+#define TAM_EMAIL 50
+#define TAM_TELEFONE 15
 
-//Outras constantes
+//Outras constantes (não sei classoficar)
 #define MAX_LIVROS 1000
 #define MAX_USUARIOS 500
 #define MAX_EMPRESTIMOS 1000
@@ -41,27 +39,27 @@ typedef struct {
 
 // Estrutura de livro
 typedef struct {
-	char isbn[MAX_ISBN];
-	char titulo[MAX_TITULO];
-	char autor[MAX_AUTOR];
-	char editora[MAX_EDITORA];
-	char categoria[MAX_CATEGORIA];
+	char isbn[TAM_ISBN];
+	char titulo[TAM_TITULO];
+	char autor[TAM_AUTOR];
+	char editora[TAM_EDITORA];
+	char categoria[TAM_CATEGORIA];
 	int anoPublicacao;
 	int totalCopias;
 	int copiasDisponiveis;
-	char localizacao[MAX_LOCALIZACAO];
+	char localizacao[TAM_LOCALIZACAO];
 	int estaAtivo; // 1 se ativo, 0 se excluído
 } Livro;
 
 // Estrutura de usuário
 typedef struct {
-	char id[MAX_ID];
-	char nome[MAX_NOME];
-	char email[MAX_EMAIL];
-	char telefone[MAX_TELEFONE];
+	char id[TAM_ID];
+	char nome[TAM_NOME];
+	char email[TAM_EMAIL];
+	char telefone[TAM_TELEFONE];
 	char papel[14]; // "admin", "bibliotecario", "leitor"
 	int contadorEmprestimos;
-	char historicoEmprestimos[50][MAX_ISBN]; // Armazena ISBNs dos livros emprestados
+	char historicoEmprestimos[50][TAM_ISBN]; // Armazena ISBNs dos livros emprestados
 	int estaAtivo;
 	float multasTotais;
 } Usuario;
@@ -69,8 +67,8 @@ typedef struct {
 // Estrutura de empréstimo
 typedef struct {
 	int idEmprestimo;
-	char idUsuario[MAX_ID];
-	char isbn[MAX_ISBN];
+	char idUsuario[TAM_ID];
+	char isbn[TAM_ISBN];
 	Data dataEmprestimo;
 	Data dataVencimento;
 	Data dataDevolucao;
@@ -80,17 +78,16 @@ typedef struct {
 	int estaAtivo;
 } Emprestimo;
 
-// Estrutura de reserva
+//estrutura de reserva
 typedef struct {
 	int idReserva;
-	char idUsuario[MAX_ID];
-	char isbn[MAX_ISBN];
+	char idUsuario[TAM_ID];
+	char isbn[TAM_ISBN];
 	Data dataReserva;
 	int estaAtivo;
 	int foiAtendida;
 } Reserva;
 
-// Declarações de funções para Gerenciamento de Livros
 void inicializarLivros(Livro livros[], int *contador);
 int adicionarLivro(Livro livros[], int *contador);
 int atualizarLivro(Livro livros[], int contador);
@@ -147,6 +144,7 @@ void limparBufferEntrada();
 void paraMinusculas(char *str);
 void imprimirSeparador();
 void pausarTela();
+void exibirLogo();
 
 // Funções de menu
 void menuAdmin(Usuario *usuarioAtual, Livro livros[], int *contadorLivros, Usuario usuarios[], int *contadorUsuarios,
@@ -158,11 +156,10 @@ void menuLeitor(Usuario *usuarioAtual, Livro livros[], int contadorLivros, Empre
 
 #endif
 
-// sistema_biblioteca.c - Arquivo de implementação principal
-//#include "sistema_biblioteca.h"
 
-// ==================== FUNÇÕES UTILITÁRIAS ====================
+// FUNÇÕES UTILITÁRIAS
 
+//funçào para obter a dats atual (data do dispositivo)
 Data obterDataAtual() {
 	Data hoje;
 	time_t t = time(NULL);
@@ -175,6 +172,7 @@ Data obterDataAtual() {
 	return hoje;
 }
 
+//quantos dias se passaram entre duas datas
 int diasEntre(Data d1, Data d2) {
 	// Converte datas para dias desde a época para comparação
 	struct tm data1 = {
@@ -255,7 +253,34 @@ void pausarTela() {
 	printf("\n");
 }
 
-// ==================== GERENCIAMENTO DE LIVROS ====================
+void exibirLogo() {
+	printf(
+		"            /;\n"
+		"           / |'-,.\n"
+		"          /  '    `\"---,.__\n"
+		"         /  '    ,'     ,  '\"--,\"|\n"
+		"        /  '    ,     ,'     ,\"::|\n"
+		"       /  '   ,'    ,      ,\"::::|\n"
+		"      /  '   ,    ,'     ,\"::::::L\n"
+		"     /  '  ,'   ,'     ,\"::::::::L\n"
+		"    /  '  ,    ,     ,\":::::::::J\n"
+		"    k-,._    ,'   _.\":::::::::::J\n"
+		"     \\.  `\"----'\"\".J::::::::::::|\n"
+		"      \\.    .-,    .L:::::::::::|\n"
+		"       \\.  (       .J:::::::::::!\n"
+		"        \\.  `--     .L:::::::::/\n"
+		"         \\.   .-.   .|::::::::/\n"
+		"          \\. (   )  .J:::::::/\n"
+		"           \\. `-'    .L:::::/\n"
+		"            \\.  L    .|::::/\n"
+		"             \\. !__  .J::: /\n"
+		"              \\.  __  .L:/\n"
+		"               \\. L_) .|/\n"
+		"                `-,__,-'\n"
+	);
+}
+
+//GERENCIAMENTO DE LIVROS
 
 void inicializarLivros(Livro livros[], int *contador) {
 	*contador = 0;
@@ -338,7 +363,7 @@ int adicionarLivro(Livro livros[], int *contador) {
 	printf("\n--- Adicionar Novo Livro ---\n");
 
 	printf("Digite o ISBN (13 dígitos): ");
-	fgets(novoLivro.isbn, MAX_ISBN, stdin);
+	fgets(novoLivro.isbn, TAM_ISBN, stdin);
 	novoLivro.isbn[strcspn(novoLivro.isbn, "\n")] = 0;
 
 	// Verifica ISBN duplicado
@@ -348,19 +373,19 @@ int adicionarLivro(Livro livros[], int *contador) {
 	}
 
 	printf("Digite o Título: ");
-	fgets(novoLivro.titulo, MAX_TITULO, stdin);
+	fgets(novoLivro.titulo, TAM_TITULO, stdin);
 	novoLivro.titulo[strcspn(novoLivro.titulo, "\n")] = 0;
 
 	printf("Digite o(s) Autor(es): ");
-	fgets(novoLivro.autor, MAX_AUTOR, stdin);
+	fgets(novoLivro.autor, TAM_AUTOR, stdin);
 	novoLivro.autor[strcspn(novoLivro.autor, "\n")] = 0;
 
 	printf("Digite a Editora: ");
-	fgets(novoLivro.editora, MAX_EDITORA, stdin);
+	fgets(novoLivro.editora, TAM_EDITORA, stdin);
 	novoLivro.editora[strcspn(novoLivro.editora, "\n")] = 0;
 
 	printf("Digite a Categoria/Gênero: ");
-	fgets(novoLivro.categoria, MAX_CATEGORIA, stdin);
+	fgets(novoLivro.categoria, TAM_CATEGORIA, stdin);
 	novoLivro.categoria[strcspn(novoLivro.categoria, "\n")] = 0;
 
 	printf("Digite o Ano de Publicação: ");
@@ -373,7 +398,7 @@ int adicionarLivro(Livro livros[], int *contador) {
 	novoLivro.copiasDisponiveis = novoLivro.totalCopias;
 
 	printf("Digite a Localização Física (ex: A1-Prateleira3): ");
-	fgets(novoLivro.localizacao, MAX_LOCALIZACAO, stdin);
+	fgets(novoLivro.localizacao, TAM_LOCALIZACAO, stdin);
 	novoLivro.localizacao[strcspn(novoLivro.localizacao, "\n")] = 0;
 
 	novoLivro.estaAtivo = 1;
@@ -386,10 +411,10 @@ int adicionarLivro(Livro livros[], int *contador) {
 }
 
 int atualizarLivro(Livro livros[], int contador) {
-	char isbn[MAX_ISBN];
+	char isbn[TAM_ISBN];
 	printf("\n--- Atualizar Informações do Livro ---\n");
 	printf("Digite o ISBN do livro a ser atualizado: ");
-	fgets(isbn, MAX_ISBN, stdin);
+	fgets(isbn, TAM_ISBN, stdin);
 	isbn[strcspn(isbn, "\n")] = 0;
 
 	int indice = encontrarLivroPorISBN(livros, contador, isbn);
@@ -403,38 +428,38 @@ int atualizarLivro(Livro livros[], int contador) {
 
 	printf("\nDigite as novas informações (pressione Enter para manter o valor atual):\n");
 
-	char entrada[MAX_TITULO];
+	char entrada[TAM_TITULO];
 
 	printf("Novo Título [%s]: ", livros[indice].titulo);
-	fgets(entrada, MAX_TITULO, stdin);
+	fgets(entrada, TAM_TITULO, stdin);
 	if (strlen(entrada) > 1) {
 		entrada[strcspn(entrada, "\n")] = 0;
 		strcpy(livros[indice].titulo, entrada);
 	}
 
 	printf("Novo Autor [%s]: ", livros[indice].autor);
-	fgets(entrada, MAX_AUTOR, stdin);
+	fgets(entrada, TAM_AUTOR, stdin);
 	if (strlen(entrada) > 1) {
 		entrada[strcspn(entrada, "\n")] = 0;
 		strcpy(livros[indice].autor, entrada);
 	}
 
 	printf("Nova Editora [%s]: ", livros[indice].editora);
-	fgets(entrada, MAX_EDITORA, stdin);
+	fgets(entrada, TAM_EDITORA, stdin);
 	if (strlen(entrada) > 1) {
 		entrada[strcspn(entrada, "\n")] = 0;
 		strcpy(livros[indice].editora, entrada);
 	}
 
 	printf("Nova Categoria [%s]: ", livros[indice].categoria);
-	fgets(entrada, MAX_CATEGORIA, stdin);
+	fgets(entrada, TAM_CATEGORIA, stdin);
 	if (strlen(entrada) > 1) {
 		entrada[strcspn(entrada, "\n")] = 0;
 		strcpy(livros[indice].categoria, entrada);
 	}
 
 	printf("Nova Localização [%s]: ", livros[indice].localizacao);
-	fgets(entrada, MAX_LOCALIZACAO, stdin);
+	fgets(entrada, TAM_LOCALIZACAO, stdin);
 	if (strlen(entrada) > 1) {
 		entrada[strcspn(entrada, "\n")] = 0;
 		strcpy(livros[indice].localizacao, entrada);
@@ -458,10 +483,10 @@ int atualizarLivro(Livro livros[], int contador) {
 }
 
 int excluirLivro(Livro livros[], int contador) {
-	char isbn[MAX_ISBN];
+	char isbn[TAM_ISBN];
 	printf("\n--- Excluir Livro ---\n");
 	printf("Digite o ISBN do livro a ser excluído: ");
-	fgets(isbn, MAX_ISBN, stdin);
+	fgets(isbn, TAM_ISBN, stdin);
 	isbn[strcspn(isbn, "\n")] = 0;
 
 	int indice = encontrarLivroPorISBN(livros, contador, isbn);
@@ -533,20 +558,20 @@ Digite a opção: \
 	scanf("%d", &opcao);
 	limparBufferEntrada();
 
-	char termoBusca[MAX_TITULO];
+	char termoBusca[TAM_TITULO];
 	int encontrados = 0;
 
 	switch(opcao) {
 		case 1:
 		printf("Digite o título para pesquisar: ");
-		fgets(termoBusca, MAX_TITULO, stdin);
+		fgets(termoBusca, TAM_TITULO, stdin);
 		termoBusca[strcspn(termoBusca, "\n")] = 0;
 		paraMinusculas(termoBusca);
 
 		printf("\nResultados da Pesquisa:\n");
 		for (int i = 0; i < contador; i++) {
 			if (livros[i].estaAtivo) {
-				char tituloCopia[MAX_TITULO];
+				char tituloCopia[TAM_TITULO];
 				strcpy(tituloCopia, livros[i].titulo);
 				paraMinusculas(tituloCopia);
 				if (strstr(tituloCopia, termoBusca) != NULL) {
@@ -559,14 +584,14 @@ Digite a opção: \
 
 		case 2:
 		printf("Digite o autor para pesquisar: ");
-		fgets(termoBusca, MAX_TITULO, stdin);
+		fgets(termoBusca, TAM_TITULO, stdin);
 		termoBusca[strcspn(termoBusca, "\n")] = 0;
 		paraMinusculas(termoBusca);
 
 		printf("\nResultados da Pesquisa:\n");
 		for (int i = 0; i < contador; i++) {
 			if (livros[i].estaAtivo) {
-				char autorCopia[MAX_AUTOR];
+				char autorCopia[TAM_AUTOR];
 				strcpy(autorCopia, livros[i].autor);
 				paraMinusculas(autorCopia);
 				if (strstr(autorCopia, termoBusca) != NULL) {
@@ -579,7 +604,7 @@ Digite a opção: \
 
 		case 3:
 		printf("Digite o ISBN: ");
-		fgets(termoBusca, MAX_TITULO, stdin);
+		fgets(termoBusca, TAM_TITULO, stdin);
 		termoBusca[strcspn(termoBusca, "\n")] = 0;
 
 		printf("\nResultado da Pesquisa:\n");
@@ -594,14 +619,14 @@ Digite a opção: \
 
 		case 4:
 		printf("Digite a categoria para filtrar: ");
-		fgets(termoBusca, MAX_TITULO, stdin);
+		fgets(termoBusca, TAM_TITULO, stdin);
 		termoBusca[strcspn(termoBusca, "\n")] = 0;
 		paraMinusculas(termoBusca);
 
 		printf("\nLivros na categoria '%s':\n", termoBusca);
 		for (int i = 0; i < contador; i++) {
 			if (livros[i].estaAtivo) {
-				char catCopia[MAX_CATEGORIA];
+				char catCopia[TAM_CATEGORIA];
 				strcpy(catCopia, livros[i].categoria);
 				paraMinusculas(catCopia);
 				if (strstr(catCopia, termoBusca) != NULL) {
@@ -617,22 +642,19 @@ Digite a opção: \
 		return;
 	}
 
-	if (!encontrados) {
-		printf("Nenhum livro encontrado com os critérios de pesquisa.\n");
-	}
+	if (!encontrados) printf("Nenhum livro encontrado com os critérios de pesquisa.\n");
 }
 
 //GERENCIAMENTO DE USUÁRIOS
-
 void inicializarUsuarios(Usuario usuarios[], int *contador) {
 	*contador = 0;
 
 	// Adiciona usuário administrador padrão
 	Usuario admin = {
 		"ADMIN001",
-		"Administrador do Sistema",
-		"admin@biblioteca.com",
-		"123-456-7890",
+		"Prince",
+		"prince@admin.com",
+		"senha_forte",
 		"admin",
 		0,
 		{
@@ -646,9 +668,9 @@ void inicializarUsuarios(Usuario usuarios[], int *contador) {
 	// Adiciona bibliotecário padrão
 	Usuario bibliotecario = {
 		"BIB001",
-		"João Bibliotecário",
-		"joao@biblioteca.com",
-		"123-456-7891",
+		"Carlos Bibliotecário",
+		"carlos@biblioteca.com",
+		"senha_grande",
 		"bibliotecario",
 		0,
 		{
@@ -662,9 +684,9 @@ void inicializarUsuarios(Usuario usuarios[], int *contador) {
 	// Adiciona leitores de exemplo
 	Usuario leitor1 = {
 		"LEIT001",
-		"Alice Leitora",
-		"alice@email.com",
-		"123-456-7892",
+		"Lírio Nhamuze",
+		"lor6@email.com",
+		"hmmmmmmmm",
 		"leitor",
 		0,
 		{
@@ -677,9 +699,9 @@ void inicializarUsuarios(Usuario usuarios[], int *contador) {
 
 	Usuario leitor2 = {
 		"LEIT002",
-		"Bob Leitor",
-		"bob@email.com",
-		"123-456-7893",
+		"Shelton Tamele",
+		"shelton@email.com",
+		"idk",
 		"leitor",
 		0,
 		{
@@ -701,7 +723,7 @@ int registrarUsuario(Usuario usuarios[], int *contador, const char *papel) {
 	printf("\n--- Registrar Novo Usuário ---\n");
 
 	printf("Digite o ID: ");
-	fgets(novoUsuario.id, MAX_ID, stdin);
+	fgets(novoUsuario.id, TAM_ID, stdin);
 	novoUsuario.id[strcspn(novoUsuario.id, "\n")] = 0;
 
 	if (encontrarUsuarioPorId(usuarios, *contador, novoUsuario.id) != -1) {
@@ -710,15 +732,15 @@ int registrarUsuario(Usuario usuarios[], int *contador, const char *papel) {
 	}
 
 	printf("Digite o Nome: ");
-	fgets(novoUsuario.nome, MAX_NOME, stdin);
+	fgets(novoUsuario.nome, TAM_NOME, stdin);
 	novoUsuario.nome[strcspn(novoUsuario.nome, "\n")] = 0;
 
 	printf("Digite o Email: ");
-	fgets(novoUsuario.email, MAX_EMAIL, stdin);
+	fgets(novoUsuario.email, TAM_EMAIL, stdin);
 	novoUsuario.email[strcspn(novoUsuario.email, "\n")] = 0;
 
 	printf("Digite o Telefone: ");
-	fgets(novoUsuario.telefone, MAX_TELEFONE, stdin);
+	fgets(novoUsuario.telefone, TAM_TELEFONE, stdin);
 	novoUsuario.telefone[strcspn(novoUsuario.telefone, "\n")] = 0;
 
 	strcpy(novoUsuario.papel, papel);
@@ -754,10 +776,10 @@ int encontrarUsuarioPorId(const Usuario usuarios[], int contador, const char *id
 }
 
 Usuario* autenticarUsuario(Usuario usuarios[], int contador) {
-	char idUsuario[MAX_ID];
+	char idUsuario[TAM_ID];
 	printf("\n--- Login no Sistema da Biblioteca ---\n");
 	printf("Digite o ID do Usuário: ");
-	fgets(idUsuario, MAX_ID, stdin);
+	fgets(idUsuario, TAM_ID, stdin);
 	idUsuario[strcspn(idUsuario, "\n")] = 0;
 
 	int indice = encontrarUsuarioPorId(usuarios, contador, idUsuario);
@@ -785,9 +807,9 @@ int emprestarLivro(Emprestimo emprestimos[], int *contadorEmprestimos, Livro liv
 
 	printf("\n--- Emprestar Livro ---\n");
 
-	char idUsuario[MAX_ID];
+	char idUsuario[TAM_ID];
 	printf("Digite o ID do Usuário: ");
-	fgets(idUsuario, MAX_ID, stdin);
+	fgets(idUsuario, TAM_ID, stdin);
 	idUsuario[strcspn(idUsuario, "\n")] = 0;
 
 	int indiceUsuario = encontrarUsuarioPorId(usuarios, contadorUsuarios, idUsuario);
@@ -801,9 +823,9 @@ int emprestarLivro(Emprestimo emprestimos[], int *contadorEmprestimos, Livro liv
 		return 0;
 	}
 
-	char isbn[MAX_ISBN];
+	char isbn[TAM_ISBN];
 	printf("Digite o ISBN do Livro: ");
-	fgets(isbn, MAX_ISBN, stdin);
+	fgets(isbn, TAM_ISBN, stdin);
 	isbn[strcspn(isbn, "\n")] = 0;
 
 	int indiceLivro = encontrarLivroPorISBN(livros, contadorLivros, isbn);
@@ -850,9 +872,10 @@ int emprestarLivro(Emprestimo emprestimos[], int *contadorEmprestimos, Livro liv
 		30,
 		31
 	};
-	if ((novoEmprestimo.dataVencimento.ano % 4 == 0 && novoEmprestimo.dataVencimento.ano % 100 != 0) ||
-		(novoEmprestimo.dataVencimento.ano % 400 == 0))
-	diasNoMes[1] = 29;
+	if (
+		(novoEmprestimo.dataVencimento.ano % 4 == 0 && novoEmprestimo.dataVencimento.ano % 100 != 0) ||
+		(novoEmprestimo.dataVencimento.ano % 400 == 0)
+	) diasNoMes[1] = 29;
 
 	if (novoEmprestimo.dataVencimento.dia > diasNoMes[novoEmprestimo.dataVencimento.mes - 1]) {
 		novoEmprestimo.dataVencimento.dia -= diasNoMes[novoEmprestimo.dataVencimento.mes - 1];
@@ -884,8 +907,7 @@ int emprestarLivro(Emprestimo emprestimos[], int *contadorEmprestimos, Livro liv
 	(*contadorEmprestimos)++;
 
 	printf("Livro emprestado com sucesso!\n");
-	printf("Data de Vencimento: %02d/%02d/%d\n", novoEmprestimo.dataVencimento.dia,
-		novoEmprestimo.dataVencimento.mes, novoEmprestimo.dataVencimento.ano);
+	printf("Data de Vencimento: %02d/%02d/%d\n", novoEmprestimo.dataVencimento.dia, novoEmprestimo.dataVencimento.mes, novoEmprestimo.dataVencimento.ano);
 
 	// Verifica se o usuário tinha uma reserva para este livro
 	for (int i = 0; i < *contadorReservas; i++) {
@@ -906,14 +928,14 @@ int devolverLivro(Emprestimo emprestimos[], int contadorEmprestimos, Livro livro
 	Usuario usuarios[], int contadorUsuarios) {
 	printf("\n--- Devolver Livro ---\n");
 
-	char idUsuario[MAX_ID];
+	char idUsuario[TAM_ID];
 	printf("Digite o ID do Usuário: ");
-	fgets(idUsuario, MAX_ID, stdin);
+	fgets(idUsuario, TAM_ID, stdin);
 	idUsuario[strcspn(idUsuario, "\n")] = 0;
 
-	char isbn[MAX_ISBN];
+	char isbn[TAM_ISBN];
 	printf("Digite o ISBN do Livro: ");
-	fgets(isbn, MAX_ISBN, stdin);
+	fgets(isbn, TAM_ISBN, stdin);
 	isbn[strcspn(isbn, "\n")] = 0;
 
 	// Encontra empréstimo ativo
@@ -940,9 +962,7 @@ int devolverLivro(Emprestimo emprestimos[], int contadorEmprestimos, Livro livro
 
 	// Atualiza disponibilidade do livro
 	int indiceLivro = encontrarLivroPorISBN(livros, contadorLivros, isbn);
-	if (indiceLivro != -1) {
-		livros[indiceLivro].copiasDisponiveis++;
-	}
+	if (indiceLivro != -1) livros[indiceLivro].copiasDisponiveis++;
 
 	// Atualiza contador de empréstimos do usuário
 	int indiceUsuario = encontrarUsuarioPorId(usuarios, contadorUsuarios, idUsuario);
@@ -964,14 +984,14 @@ int devolverLivro(Emprestimo emprestimos[], int contadorEmprestimos, Livro livro
 int renovarLivro(Emprestimo emprestimos[], int contadorEmprestimos, Livro livros[], int contadorLivros) {
 	printf("\n--- Renovar Livro ---\n");
 
-	char idUsuario[MAX_ID];
+	char idUsuario[TAM_ID];
 	printf("Digite o ID do Usuário: ");
-	fgets(idUsuario, MAX_ID, stdin);
+	fgets(idUsuario, TAM_ID, stdin);
 	idUsuario[strcspn(idUsuario, "\n")] = 0;
 
-	char isbn[MAX_ISBN];
+	char isbn[TAM_ISBN];
 	printf("Digite o ISBN do Livro: ");
-	fgets(isbn, MAX_ISBN, stdin);
+	fgets(isbn, TAM_ISBN, stdin);
 	isbn[strcspn(isbn, "\n")] = 0;
 
 	// Encontra empréstimo ativo
@@ -1001,15 +1021,13 @@ int renovarLivro(Emprestimo emprestimos[], int contadorEmprestimos, Livro livros
 		printf("Erro: Não é possível renovar um livro atrasado. Devolva-o primeiro.\n");
 		return 0;
 	}
-
 	// Verifica se o livro tem reservas
-	// (Simplificado - em um sistema real, verificaria a tabela de reservas)
 
 	// Renova o empréstimo
 	emprestimos[indiceEmprestimo].dataVencimento.dia += DIAS_DE_EMPRESTIMO;
 	emprestimos[indiceEmprestimo].renovacoesUtilizadas++;
 
-	// Ajusta para estouro de mês (lógica similar à de empréstimo)
+	//vetor contendo os dias de cads mês
 	int diasNoMes[] = {
 		31,
 		28,
@@ -1051,9 +1069,7 @@ void calcularMulta(Emprestimo *emprestimo) {
 
 	if (diasAtraso > 0) {
 		emprestimo->valorMulta = diasAtraso * MULTA_POR_DIA;
-	} else {
-		emprestimo->valorMulta = 0.0;
-	}
+	} else emprestimo->valorMulta = 0.0;
 }
 
 void exibirEmprestimosAtivos(const Emprestimo emprestimos[], int contador, const Livro livros[], int contadorLivros) {
@@ -1117,12 +1133,10 @@ void exibirEmprestimosUsuario(const Emprestimo emprestimos[], int contador, cons
 		}
 	}
 
-	if (!encontrados) {
-		printf("Nenhum empréstimo ativo.\n");
-	}
+	if (!encontrados) printf("Nenhum empréstimo ativo.\n");
 }
 
-// ==================== SISTEMA DE RESERVAS ====================
+//SISTEMA DE RESERVAS
 
 void inicializarReservas(Reserva reservas[], int *contador) {
 	*contador = 0;
@@ -1135,9 +1149,9 @@ int fazerReserva(Reserva reservas[], int *contador, const char *idUsuario,
 		return 0;
 	}
 
-	char isbn[MAX_ISBN];
+	char isbn[TAM_ISBN];
 	printf("Digite o ISBN do livro para reservar: ");
-	fgets(isbn, MAX_ISBN, stdin);
+	fgets(isbn, TAM_ISBN, stdin);
 	isbn[strcspn(isbn, "\n")] = 0;
 
 	int indiceLivro = encontrarLivroPorISBN(livros, contadorLivros, isbn);
@@ -1172,8 +1186,10 @@ int fazerReserva(Reserva reservas[], int *contador, const char *idUsuario,
 	reservas[*contador] = novaReserva;
 	(*contador)++;
 
-	printf("Reserva feita com sucesso!\n");
-	printf("Você será notificado quando o livro estiver disponível.\n");
+	printf("\
+Reserva feita com sucesso!\n\
+Você será notificado quando o livro estiver disponível.\n\
+		");
 	return 1;
 }
 
@@ -1196,9 +1212,7 @@ void visualizarReservas(const Reserva reservas[], int contador, const char *idUs
 		}
 	}
 
-	if (!encontrados) {
-		printf("Nenhuma reserva encontrada.\n");
-	}
+	if (!encontrados) printf("Nenhuma reserva encontrada.\n");
 }
 
 // GERAÇÃO DE RELATÓRIOS
@@ -1209,14 +1223,14 @@ void gerarRelatorioMaisEmprestados(const Emprestimo emprestimos[], int contadorE
 
 	// Cria array para contar empréstimos
 	typedef struct {
-		char isbn[MAX_ISBN];
+		char isbn[TAM_ISBN];
 		int contagem;
 	} ContagemEmprestimo;
 
 	ContagemEmprestimo contagens[MAX_LIVROS];
 	int contagemUnica = 0;
 
-	// Conta empréstimos por livro
+	//contar empréstimos por livro
 	for (int i = 0; i < contadorEmprestimos; i++) {
 		if (emprestimos[i].estaAtivo) {
 			int encontrado = 0;
@@ -1235,7 +1249,7 @@ void gerarRelatorioMaisEmprestados(const Emprestimo emprestimos[], int contadorE
 		}
 	}
 
-	// Ordena por contagem (decrescente)
+	//ordena por contagem decrescente
 	for (int i = 0; i < contagemUnica - 1; i++) {
 		for (int j = i + 1; j < contagemUnica; j++) {
 			if (contagens[j].contagem > contagens[i].contagem) {
@@ -1246,7 +1260,7 @@ void gerarRelatorioMaisEmprestados(const Emprestimo emprestimos[], int contadorE
 		}
 	}
 
-	// Exibe os 10 primeiros
+	//exibe os 10 primeiros livros
 	printf("%-5s %-30s %-20s %s\n", "Rank", "Título", "Autor", "Vezes Emprestado");
 	imprimirSeparador();
 
@@ -1381,7 +1395,7 @@ void gerarEstatisticasUso(const Emprestimo emprestimos[], int contadorEmprestimo
 		((float)emprestimosDevolvidos / contadorEmprestimos * 100): 0);
 }
 
-// ==================== SISTEMA DE MENU ====================
+//SISTEMA DE MENU
 
 void menuAdmin(Usuario *usuarioAtual, Livro livros[], int *contadorLivros, Usuario usuarios[], int *contadorUsuarios,
 	Emprestimo emprestimos[], int *contadorEmprestimos, Reserva reservas[], int *contadorReservas) {
@@ -1569,6 +1583,7 @@ void menuLeitor(Usuario *usuarioAtual, Livro livros[], int contadorLivros, Empre
 			case 3: fazerReserva(reservas, contadorReservas, usuarioAtual->id, livros, contadorLivros); pausarTela(); break;
 			case 4: visualizarReservas(reservas, *contadorReservas, usuarioAtual->id, livros, contadorLivros); pausarTela(); break;
 			case 5:
+			//exibe as multas do leitor
 			printf("\n--- Suas Multas ---\n");
 			printf("Total de Multas Pendentes: R$%.2f\n", usuarioAtual->multasTotais);
 			pausarTela();
@@ -1577,12 +1592,12 @@ void menuLeitor(Usuario *usuarioAtual, Livro livros[], int contadorLivros, Empre
 	} while(opcao != 0);
 }
 
-void exibirTodosUsuarios(const Usuario usuarios[], int contador) {
+void exibirTodosUsuarios(const Usuario usuarios[], int numeroDeUsuarios) {
 	printf("\n--- Todos os Usuários ---\n");
 	printf("%-10s %-20s %-15s %-10s\n", "ID", "Nome", "Papel", "Empréstimos");
 	imprimirSeparador();
 
-	for (int i = 0; i < contador; i++) {
+	for (int i = 0; i < numeroDeUsuarios; i++) {
 		if (usuarios[i].estaAtivo) {
 			printf("%-10s %-20s %-15s %d\n", usuarios[i].id, usuarios[i].nome,
 				usuarios[i].papel, usuarios[i].contadorEmprestimos);
@@ -1590,8 +1605,7 @@ void exibirTodosUsuarios(const Usuario usuarios[], int contador) {
 	}
 }
 
-// ==================== FUNÇÃO PRINCIPAL ====================
-
+//função principal
 int main() {
 	// Inicializa todas as estruturas de dados
 	Livro livros[MAX_LIVROS];
@@ -1610,6 +1624,9 @@ int main() {
 	int contadorReservas;
 	inicializarReservas(reservas, &contadorReservas);
 
+	//exibir logo
+	exibirLogo();
+	//mensagem de boas vindas
 	printf("\
 ╔════════════════════════════════════════════════╗\n\
 ║ SISTEMA DE GERENCIAMENTO DE BIBLIOTECA         ║\n\
@@ -1618,6 +1635,7 @@ int main() {
 		");
 
 	while (1) {
+		//repete até o usuário não desejar continuar
 		Usuario *usuarioAtual = autenticarUsuario(usuarios, contadorUsuarios);
 
 		if (usuarioAtual != NULL) {
@@ -1633,14 +1651,17 @@ int main() {
 			} else printf("Papel de usuário inválido!\n");
 		}
 
+		//pergunta se o usuário deseja continuar
 		printf("\nDeseja continuar? (1=Sim, 0=Sair): ");
-		int opcaoContinuar;
-		scanf("%d", &opcaoContinuar);
+		short int opcaoContinuar; //tipo short para poupar memória
+		scanf("%hd", &opcaoContinuar);
 		limparBufferEntrada();
 
+		//termina o siclo se o usuário escolheu não continuar
 		if (opcaoContinuar == 0) break;
 	}
 
+	//mensagem de despedida
 	printf("\nObrigado por usar o Sistema de Gerenciamento de Biblioteca!\n");
 	//fim
 	return 0;
