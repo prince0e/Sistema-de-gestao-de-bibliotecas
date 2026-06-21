@@ -30,7 +30,20 @@
 #define MAX_RENOVACOES 2
 #define MAX_EMPRESTIMOS_POR_USUARIO 5
 
-// Estrutura de data
+//Cores para estilizar a interface, porque Sim
+#define COR_RESET "\033[0m"
+#define COR_BOLD "\033[1m"
+#define COR_VERDE "\033[32m"
+#define COR_AMARELO "\033[33m"
+#define COR_AZUL "\033[34m"
+#define COR_MAGENTA "\033[35m"
+#define COR_CIANO "\033[36m"
+#define COR_BRANCO "\033[37m"
+#define COR_VERMELHO "\033[31m"
+#define COR_BG_ESCURO "\033[48;5;235m"
+#define COR_CINZA "\033[90m"
+
+//Estrutura de data
 typedef struct {
 	int dia;
 	int mes;
@@ -64,7 +77,7 @@ typedef struct {
 	float multasTotais;
 } Usuario;
 
-// Estrutura de empréstimo
+//Estrutura de empréstimo
 typedef struct {
 	int idEmprestimo;
 	char idUsuario[TAM_ID];
@@ -238,9 +251,7 @@ void limparBufferEntrada() {
 }
 
 void paraMinusculas(char *str) {
-	for (int i = 0; str[i]; i++) {
-		str[i] = tolower(str[i]);
-	}
+	for (int i = 0; str[i]; i++) str[i] = tolower(str[i]);
 }
 
 void imprimirSeparador() {
@@ -253,18 +264,20 @@ void pausarTela() {
 	printf("\n");
 }
 
+//funçào para exibir logo no cabeçalho
 void exibirLogo() {
-	printf(
+	printf(//Desenho de livro magnífico usando símbolos
+		COR_VERDE
 		"            /;\n"
 		"           / |'-,.\n"
 		"          /  '    `\"---,.__\n"
-		"         /  '    ,'     ,  '\"--,\"|\n"
-		"        /  '    ,     ,'     ,\"::|\n"
-		"       /  '   ,'    ,      ,\"::::|\n"
-		"      /  '   ,    ,'     ,\"::::::L\n"
-		"     /  '  ,'   ,'     ,\"::::::::L\n"
-		"    /  '  ,    ,     ,\":::::::::J\n"
-		"    k-,._    ,'   _.\":::::::::::J\n"
+		"         /  '    ,'     ,  '\"--,|\n"
+		"        /  '    ,     ,'     ,\":|\n"
+		"       /  '   ,'    ,      ,\":::|\n"
+		"      /  '   ,    ,'     ,\":::::|\n"
+		"     /  '  ,'   ,'     ,\":::::::|\n"
+		"    /  '  ,    ,     ,\":::::::::|\n"
+		"    k-,._    ,'   _.\":::::::::::|\n"
 		"     \\.  `\"----'\"\".J::::::::::::|\n"
 		"      \\.    .-,    .L:::::::::::|\n"
 		"       \\.  (       .J:::::::::::!\n"
@@ -273,10 +286,11 @@ void exibirLogo() {
 		"          \\. (   )  .J:::::::/\n"
 		"           \\. `-'    .L:::::/\n"
 		"            \\.  L    .|::::/\n"
-		"             \\. !__  .J::: /\n"
+		"             \\. !__  .J:::/\n"
 		"              \\.  __  .L:/\n"
 		"               \\. L_) .|/\n"
 		"                `-,__,-'\n"
+		COR_RESET
 	);
 }
 
@@ -637,8 +651,7 @@ Digite a opção: \
 		}
 		break;
 
-		default:
-		printf("Opção inválida!\n");
+		default: printf("Opção inválida!\n");
 		return;
 	}
 
@@ -649,7 +662,7 @@ Digite a opção: \
 void inicializarUsuarios(Usuario usuarios[], int *contador) {
 	*contador = 0;
 
-	// Adiciona usuário administrador padrão
+	//Usuario administrador padrão
 	Usuario admin = {
 		"ADMIN001",
 		"Prince",
@@ -1402,17 +1415,19 @@ void menuAdmin(Usuario *usuarioAtual, Livro livros[], int *contadorLivros, Usuar
 	int opcao;
 
 	do {
-		printf("\n╔════════════════════════════════════╗\n\
-║     MENU DO ADMINISTRADOR         ║\n\
-╠════════════════════════════════════╣\n\
-║ 1. Gerenciar Livros               ║\n\
-║ 2. Gerenciar Usuários             ║\n\
-║ 3. Visualizar Todos os Empréstimos║\n\
-║ 4. Gerar Relatórios               ║\n\
-║ 5. Visualizar Configurações       ║\n\
-║ 0. Sair                           ║\n\
-╚════════════════════════════════════╝\n\
-			");
+		printf(
+			"\n"
+			"╔════════════════════════════════════╗\n"
+			"║ MENU DO ADMINISTRADOR         ║\n"
+			"╠════════════════════════════════════╣\n"
+			"║ 1. Gerenciar Livros               ║\n"
+			"║ 2. Gerenciar Usuários             ║\n"
+			"║ 3. Visualizar Todos os Empréstimos║\n"
+			"║ 4. Gerar Relatórios               ║\n"
+			"║ 5. Visualizar Configurações       ║\n"
+			"║ 0. Sair                           ║\n"
+			"╚════════════════════════════════════╝\n"
+		);
 		printf("Digite a opção: ");
 		scanf("%d", &opcao);
 		limparBufferEntrada();
@@ -1421,16 +1436,17 @@ void menuAdmin(Usuario *usuarioAtual, Livro livros[], int *contadorLivros, Usuar
 			case 1: {
 				int opcaoLivro;
 				do {
-					printf("\n\
---- Gerenciamento de Livros ---\n\
-1. Adicionar Livro\n\
-2. Atualizar Livro\n\
-3. Excluir Livro\n\
-4. Visualizar Todos os Livros\n\
-5. Pesquisar Livros\n\
-0. Voltar\n\
-Digite a opção: \
-						");
+					printf(
+						"\n"
+						"--- Gerenciamento de Livros ---\n"
+						"1. Adicionar Livro\n"
+						"2. Atualizar Livro\n"
+						"3. Excluir Livro\n"
+						"4. Visualizar Todos os Livros\n"
+						"5. Pesquisar Livros\n"
+						"0. Voltar\n"
+						"Digite a opção: "
+					);
 					scanf("%d", &opcaoLivro);
 					limparBufferEntrada();
 
@@ -1448,15 +1464,16 @@ Digite a opção: \
 			case 2: {
 				int opcaoUsuario;
 				do {
-					printf("\n\
---- Gerenciamento de Usuários ---\n\
-1. Registrar Usuário\n\
-2. Atualizar Usuário\n\
-3. Excluir Usuário\n\
-4. Visualizar Todos os Usuários\n\
-0. Voltar\n\
-Digite a opção: \
-						");
+					printf(
+						"\n"
+						"--- Gerenciamento de Usuários ---\n"
+						"1. Registrar Usuário\n"
+						"2. Atualizar Usuário\n"
+						"3. Excluir Usuário\n"
+						"4. Visualizar Todos os Usuários\n"
+						"0. Voltar\n"
+						"Digite a opção: "
+					);
 					scanf("%d", &opcaoUsuario);
 					limparBufferEntrada();
 
@@ -1485,16 +1502,17 @@ Digite a opção: \
 			case 4: {
 				int opcaoRelatorio;
 				do {
-					printf("\n\
---- Relatórios ---\n\
-1. Livros Mais Emprestados\n\
-2. Livros Disponíveis\n\
-3. Livros Atrasados\n\
-4. Relatório de Multas\n\
-5. Estatísticas de Uso\n\
-0. Voltar\n\
-Digite a opção: \
-						");
+					printf(
+						"\n"
+						"--- Relatórios ---\n"
+						"1. Livros Mais Emprestados\n"
+						"2. Livros Disponíveis\n"
+						"3. Livros Atrasados\n"
+						"4. Relatório de Multas\n"
+						"5. Estatísticas de Uso\n"
+						"0. Voltar\n"
+						"Digite a opção: "
+					);
 					scanf("%d", &opcaoRelatorio);
 					limparBufferEntrada();
 
@@ -1526,19 +1544,20 @@ void menuBibliotecario(Usuario *usuarioAtual, Livro livros[], int *contadorLivro
 	int opcao;
 
 	do {
-		printf("\n\
-╔════════════════════════════════════╗\n\
-║ MENU DO BIBLIOTECÁRIO         ║\n\
-╠════════════════════════════════════╣\n\
-║ 1. Emprestar Livro                ║\n\
-║ 2. Devolver Livro                 ║\n\
-║ 3. Renovar Livro                  ║\n\
-║ 4. Visualizar Empréstimos Ativos  ║\n\
-║ 5. Pesquisar Livros               ║\n\
-║ 6. Visualizar Livros Atrasados    ║\n\
-║ 0. Sair                           ║\n\
-╚════════════════════════════════════╝\n\
-			");
+		printf(
+			"\n"
+			"╔════════════════════════════════════╗\n"
+			"║ MENU DO BIBLIOTECÁRIO               ║\n"
+			"╠════════════════════════════════════╣\n"
+			"║ 1. Emprestar Livro                  ║\n"
+			"║ 2. Devolver Livro                   ║\n"
+			"║ 3. Renovar Livro                    ║\n"
+			"║ 4. Visualizar Empréstimos Ativos    ║\n"
+			"║ 5. Pesquisar Livros                 ║\n"
+			"║ 6. Visualizar Livros Atrasados      ║\n"
+			"║ 0. Sair                             ║\n"
+			"╚════════════════════════════════════╝\n"
+		);
 		printf("Digite a opção: ");
 		scanf("%d", &opcao);
 		limparBufferEntrada();
@@ -1627,12 +1646,13 @@ int main() {
 	//exibir logo
 	exibirLogo();
 	//mensagem de boas vindas
-	printf("\
-╔════════════════════════════════════════════════╗\n\
-║ SISTEMA DE GERENCIAMENTO DE BIBLIOTECA         ║\n\
-║ Bem-vindo à Biblioteca!                        ║\n\
-╚════════════════════════════════════════════════╝\n\
-		");
+	printf(
+		"%s"
+		"╔════════════════════════════════════════════════╗\n"
+		"║ SISTEMA DE GESTÃO DE BIBLIOTECA                ║\n"
+		"║ Bem-vindo à Biblioteca!                        ║\n"
+		"╚════════════════════════════════════════════════╝\n"
+		"%s", COR_AMARELO, COR_RESET);
 
 	while (1) {
 		//repete até o usuário não desejar continuar
