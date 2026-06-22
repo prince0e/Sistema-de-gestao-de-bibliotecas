@@ -64,13 +64,21 @@ typedef struct {
 	int estaAtivo; // 1 se ativo, 0 se excluído
 } Livro;
 
+
+//Enumerador para defenir o papel do usuário
+typedef enum {
+	ADMINISTRADOR,
+	BIBLIOTECARIO,
+	LEITOR
+} Papel;
+
 // Estrutura de usuário
 typedef struct {
 	char id[TAM_ID];
 	char nome[TAM_NOME];
 	char email[TAM_EMAIL];
 	char telefone[TAM_TELEFONE];
-	char papel[14]; // "admin", "bibliotecario", "leitor"
+	Papel papel;
 	int contadorEmprestimos;
 	char historicoEmprestimos[50][TAM_ISBN]; // Armazena ISBNs dos livros emprestados
 	int estaAtivo;
@@ -112,7 +120,7 @@ void pesquisarLivros(const Livro livros[], int contador);
 
 // Declarações de funções para Gerenciamento de Usuários
 void inicializarUsuarios(Usuario usuarios[], int *contador);
-int registrarUsuario(Usuario usuarios[], int *contador, const char *papel);
+int registrarUsuario(Usuario usuarios[], int *contador, const Papel papel);
 int atualizarUsuario(Usuario usuarios[], int contador);
 int excluirUsuario(Usuario usuarios[], int contador);
 void exibirUsuario(const Usuario *usuario);
@@ -668,7 +676,7 @@ void inicializarUsuarios(Usuario usuarios[], int *contador) {
 		"Prince",
 		"prince@admin.com",
 		"senha_forte",
-		"admin",
+		ADMINISTRADOR,
 		0,
 		{
 			""
@@ -684,7 +692,7 @@ void inicializarUsuarios(Usuario usuarios[], int *contador) {
 		"Carlos Bibliotecário",
 		"carlos@biblioteca.com",
 		"senha_grande",
-		"bibliotecario",
+		BIBLIOTECARIO,
 		0,
 		{
 			""
@@ -700,7 +708,7 @@ void inicializarUsuarios(Usuario usuarios[], int *contador) {
 		"Lírio Nhamuze",
 		"lor6@email.com",
 		"hmmmmmmmm",
-		"leitor",
+		LEITOR,
 		0,
 		{
 			""
@@ -715,7 +723,7 @@ void inicializarUsuarios(Usuario usuarios[], int *contador) {
 		"Shelton Tamele",
 		"shelton@email.com",
 		"idk",
-		"leitor",
+		LEITOR,
 		0,
 		{
 			""
@@ -726,7 +734,7 @@ void inicializarUsuarios(Usuario usuarios[], int *contador) {
 	usuarios[(*contador)++] = leitor2;
 }
 
-int registrarUsuario(Usuario usuarios[], int *contador, const char *papel) {
+int registrarUsuario(Usuario usuarios[], int *contador, const Papel papel) {
 	if (*contador >= MAX_USUARIOS) {
 		printf("Erro: Limite máximo de usuários atingido!\n");
 		return 0;
@@ -756,7 +764,7 @@ int registrarUsuario(Usuario usuarios[], int *contador, const char *papel) {
 	fgets(novoUsuario.telefone, TAM_TELEFONE, stdin);
 	novoUsuario.telefone[strcspn(novoUsuario.telefone, "\n")] = 0;
 
-	strcpy(novoUsuario.papel, papel);
+	novoUsuario.papel = papel;
 	novoUsuario.contadorEmprestimos = 0;
 	novoUsuario.estaAtivo = 1;
 	novoUsuario.multasTotais = 0.0;
@@ -773,7 +781,20 @@ void exibirUsuario(const Usuario *usuario) {
 	printf("Nome: %s\n", usuario->nome);
 	printf("Email: %s\n", usuario->email);
 	printf("Telefone: %s\n", usuario->telefone);
-	printf("Papel: %s\n", usuario->papel);
+
+	//Switc	case para exibir o papel do usuário dependendo do valor da enum
+	switch (usuario->papel) {
+		case ADMINISTRADOR:
+			printf("Papel: administrador\n");
+			break;
+		case BIBLIOTECARIO:
+			printf("Papel: bibliotecario\n");
+			break;
+		case LEITOR:
+			printf("Papel: leitor\n");
+			break;
+	}
+
 	printf("Empréstimos Ativos: %d\n", usuario->contadorEmprestimos);
 	printf("Multas Totais: R$%.2f\n", usuario->multasTotais);
 }
@@ -1479,10 +1500,29 @@ void menuAdmin(Usuario *usuarioAtual, Livro livros[], int *contadorLivros, Usuar
 
 					switch(opcaoUsuario) {
 						case 1: {
-							printf("Digite o papel (admin/bibliotecario/leitor): ");
-							char papel[10];
-							fgets(papel, 10, stdin);
-							papel[strcspn(papel, "\n")] = 0;
+							printf(
+								"Escolha o papel: "
+								"1. Administrador"
+								"2. Bibliotecário"
+								"3. Leitor"
+								"\n");
+
+							short int papelEntrada;
+							scanf("%hd", &papelEntrada);
+
+							Papel papel;
+							switch (papelEntrada){
+								case 1:
+									papel = ADMINISTRADOR;
+									break;
+								case 2:
+									papel = BIBLIOTECARIO;
+									break;
+								case 3:
+									papel = LEITOR;
+									break;
+							}
+
 							registrarUsuario(usuarios, contadorUsuarios, papel);
 							break;
 						}
@@ -1578,20 +1618,22 @@ void menuLeitor(Usuario *usuarioAtual, Livro livros[], int contadorLivros, Empre
 	int opcao;
 
 	do {
-		printf("\n\
-╔════════════════════════════════════╗\n\
-║     MENU DO LEITOR                ║\n\
-╠════════════════════════════════════╣\n\
-║ Bem-vindo, %-20s ║\n\
-╠════════════════════════════════════╣\n\
-║ 1. Pesquisar Livros               ║\n\
-║ 2. Visualizar Meus Empréstimos    ║\n\
-║ 3. Reservar Livro                 ║\n\
-║ 4. Visualizar Minhas Reservas     ║\n\
-║ 5. Visualizar Minhas Multas       ║\n\
-║ 0. Sair                           ║\n\
-╚════════════════════════════════════╝\n\
-			", usuarioAtual->nome);
+		printf(
+			"\n"
+			"╔════════════════════════════════════╗\n"
+			"║     MENU DO LEITOR                ║\n"
+			"╠════════════════════════════════════╣\n"
+			"║ Bem-vindo, %-20s ║\n"
+			"╠════════════════════════════════════╣\n"
+			"║ 1. Pesquisar Livros               ║\n"
+			"║ 2. Visualizar Meus Empréstimos    ║\n"
+			"║ 3. Reservar Livro                 ║\n"
+			"║ 4. Visualizar Minhas Reservas     ║\n"
+			"║ 5. Visualizar Minhas Multas       ║\n"
+			"║ 0. Sair                           ║\n"
+			"╚════════════════════════════════════╝"
+			"\n"
+			, usuarioAtual->nome);
 		printf("Digite a opção: ");
 		scanf("%d", &opcao);
 		limparBufferEntrada();
@@ -1618,15 +1660,28 @@ void exibirTodosUsuarios(const Usuario usuarios[], int numeroDeUsuarios) {
 
 	for (int i = 0; i < numeroDeUsuarios; i++) {
 		if (usuarios[i].estaAtivo) {
-			printf("%-10s %-20s %-15s %d\n", usuarios[i].id, usuarios[i].nome,
-				usuarios[i].papel, usuarios[i].contadorEmprestimos);
+			printf("%-10s %-20s ", usuarios[i].id, usuarios[i].nome);
+
+			switch (usuarios[i].papel) {
+		case ADMINISTRADOR:
+			printf("administrador");
+			break;
+		case BIBLIOTECARIO:
+			printf("bibliotecário");
+			break;
+		case LEITOR:
+			printf("leitor");
+			break;
+			}
+
+			printf(" %d\n", usuarios[i].contadorEmprestimos);
 		}
 	}
 }
 
 //função principal
 int main() {
-	// Inicializa todas as estruturas de dados
+	//Inicializa todas as estruturas de dados
 	Livro livros[MAX_LIVROS];
 	int contadorLivros;
 	inicializarLivros(livros, &contadorLivros);
@@ -1647,25 +1702,26 @@ int main() {
 	exibirLogo();
 	//mensagem de boas vindas
 	printf(
-		"%s"
+		COR_AMARELO
 		"╔════════════════════════════════════════════════╗\n"
 		"║ SISTEMA DE GESTÃO DE BIBLIOTECA                ║\n"
 		"║ Bem-vindo à Biblioteca!                        ║\n"
 		"╚════════════════════════════════════════════════╝\n"
-		"%s", COR_AMARELO, COR_RESET);
+		COR_RESET
+	);
 
 	while (1) {
 		//repete até o usuário não desejar continuar
 		Usuario *usuarioAtual = autenticarUsuario(usuarios, contadorUsuarios);
 
 		if (usuarioAtual != NULL) {
-			if (strcmp(usuarioAtual->papel, "admin") == 0) {
+			if (usuarioAtual->papel == ADMINISTRADOR) {
 				menuAdmin(usuarioAtual, livros, &contadorLivros, usuarios, &contadorUsuarios,
 					emprestimos, &contadorEmprestimos, reservas, &contadorReservas);
-			} else if (strcmp(usuarioAtual->papel, "bibliotecario") == 0) {
+			} else if (usuarioAtual->papel == BIBLIOTECARIO) {
 				menuBibliotecario(usuarioAtual, livros, &contadorLivros, usuarios, &contadorUsuarios,
 					emprestimos, &contadorEmprestimos, reservas, &contadorReservas);
-			} else if (strcmp(usuarioAtual->papel, "leitor") == 0) {
+			} else if (usuarioAtual->papel == LEITOR) {
 				menuLeitor(usuarioAtual, livros, contadorLivros, emprestimos, contadorEmprestimos,
 					reservas, &contadorReservas);
 			} else printf("Papel de usuário inválido!\n");
