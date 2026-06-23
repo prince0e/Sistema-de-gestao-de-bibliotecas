@@ -1,10 +1,14 @@
-#ifndef SISTEMA_BIBLIOTECA_H
-#define SISTEMA_BIBLIOTECA_H
+#ifndef SISTEMA_DE_GESTAO_DE_BIBLIOTECA
+#define SISTEMA_DE_GESTAO_DE_BIBLIOTECA
+//1 para windows, 0 para outros
+#define SISTEMA_OPERACIONAL 0
 #include <stdio.h> //Biblioteca para entrada e saída de dados
 #include <stdlib.h> //biblioteca para chamadas no sistema e manipulação de memória
 #include <string.h>//biblioteca para operações com strings
 #include <time.h>//biblioteca para operações com tempo
-#include <ctype.h>//biblioteca para clasdificar caracteres da string
+#include <ctype.h>//biblioteca para classificar caracteres da string
+
+//CONSTANTES (TAM = tamanho da string, MAX = número de elementos no vetor)
 
 // Constantes para livros
 #define TAM_ISBN 30
@@ -18,9 +22,10 @@
 #define TAM_ID 20
 #define TAM_NOME 50
 #define TAM_EMAIL 50
-#define TAM_TELEFONE 15
+//Os números moçambicanos geralmente têm 9 caracteres
+#define TAM_TELEFONE 9
 
-//Outras constantes (não sei classoficar)
+//Outras constantes (não sabemos classoficar)
 #define MAX_LIVROS 1000
 #define MAX_USUARIOS 500
 #define MAX_EMPRESTIMOS 1000
@@ -30,7 +35,7 @@
 #define MAX_RENOVACOES 2
 #define MAX_EMPRESTIMOS_POR_USUARIO 5
 
-//Cores para estilizar a interface, porque Sim
+//Cores para estilizar a interface
 #define COR_RESET "\033[0m"
 #define COR_BOLD "\033[1m"
 #define COR_VERDE "\033[32m"
@@ -78,7 +83,7 @@ typedef struct {
 	char nome[TAM_NOME];
 	char email[TAM_EMAIL];
 	char telefone[TAM_TELEFONE];
-	Papel papel;
+	Papel papel; //administrador, leitor, bibliotecario
 	int contadorEmprestimos;
 	char historicoEmprestimos[50][TAM_ISBN]; // Armazena ISBNs dos livros emprestados
 	int estaAtivo;
@@ -166,6 +171,7 @@ void paraMinusculas(char *str);
 void imprimirSeparador();
 void pausarTela();
 void exibirLogo();
+void limparTela();
 
 // Funções de menu
 void menuAdmin(Usuario *usuarioAtual, Livro livros[], int *contadorLivros, Usuario usuarios[], int *contadorUsuarios,
@@ -269,7 +275,7 @@ void imprimirSeparador() {
 void pausarTela() {
 	printf("\nPressione Enter para continuar...");
 	limparBufferEntrada();
-	printf("\n");
+	limparTela();
 }
 
 //funçào para exibir logo no cabeçalho
@@ -300,6 +306,18 @@ void exibirLogo() {
 		"                `-,__,-'\n"
 		COR_RESET
 	);
+}
+
+void limparTela() {
+	//Comando diferente para limpar a tela dependendo do sistema operacional (essa é a única utilidade da macro SISTEMA_OPERACIONAL)
+	#if SISTEMA_OPERACIONAL == 1
+		system("cls");
+	#else
+		system("clear");
+	#endif
+
+	//Exibe a logo apôs limpar a tela
+	exibirLogo();
 }
 
 //GERENCIAMENTO DE LIVROS
@@ -452,6 +470,9 @@ int atualizarLivro(Livro livros[], int contador) {
 
 	char entrada[TAM_TITULO];
 
+//LER OS DETALHES DO LIVRO
+
+	//Ler o título
 	printf("Novo Título [%s]: ", livros[indice].titulo);
 	fgets(entrada, TAM_TITULO, stdin);
 	if (strlen(entrada) > 1) {
@@ -459,6 +480,7 @@ int atualizarLivro(Livro livros[], int contador) {
 		strcpy(livros[indice].titulo, entrada);
 	}
 
+	//Ler o autor
 	printf("Novo Autor [%s]: ", livros[indice].autor);
 	fgets(entrada, TAM_AUTOR, stdin);
 	if (strlen(entrada) > 1) {
@@ -466,6 +488,7 @@ int atualizarLivro(Livro livros[], int contador) {
 		strcpy(livros[indice].autor, entrada);
 	}
 
+	//Ler a editora
 	printf("Nova Editora [%s]: ", livros[indice].editora);
 	fgets(entrada, TAM_EDITORA, stdin);
 	if (strlen(entrada) > 1) {
@@ -473,6 +496,7 @@ int atualizarLivro(Livro livros[], int contador) {
 		strcpy(livros[indice].editora, entrada);
 	}
 
+	//Ler a categoria
 	printf("Nova Categoria [%s]: ", livros[indice].categoria);
 	fgets(entrada, TAM_CATEGORIA, stdin);
 	if (strlen(entrada) > 1) {
@@ -480,6 +504,7 @@ int atualizarLivro(Livro livros[], int contador) {
 		strcpy(livros[indice].categoria, entrada);
 	}
 
+	//Ler a Localização
 	printf("Nova Localização [%s]: ", livros[indice].localizacao);
 	fgets(entrada, TAM_LOCALIZACAO, stdin);
 	if (strlen(entrada) > 1) {
@@ -487,6 +512,7 @@ int atualizarLivro(Livro livros[], int contador) {
 		strcpy(livros[indice].localizacao, entrada);
 	}
 
+	//Ler o total de cópias
 	printf("Novo Total de Cópias [%d]: ", livros[indice].totalCopias);
 	fgets(entrada, 10, stdin);
 	if (strlen(entrada) > 1) {
@@ -569,14 +595,15 @@ int encontrarLivroPorISBN(const Livro livros[], int contador, const char *isbn) 
 
 void pesquisarLivros(const Livro livros[], int contador) {
 	int opcao;
-	printf("\n\
---- Pesquisar Livros ---\n\
-1. Pesquisar por Título\n\
-2. Pesquisar por Autor\n\
-3. Pesquisar por ISBN\n\
-4. Pesquisar por Categoria\n\
-Digite a opção: \
-		");
+	printf(
+		"\n"
+"--- Pesquisar Livros ---\n"
+"1. Pesquisar por Título\n"
+"2. Pesquisar por Autor\n"
+"3. Pesquisar por ISBn\n"
+"4. Pesquisar por Categoria\n"
+"Digite a opção: "
+		);
 	scanf("%d", &opcao);
 	limparBufferEntrada();
 
@@ -675,7 +702,7 @@ void inicializarUsuarios(Usuario usuarios[], int *contador) {
 		"ADMIN001",
 		"Prince",
 		"prince@admin.com",
-		"senha_forte",
+		"843642532",
 		ADMINISTRADOR,
 		0,
 		{
@@ -691,7 +718,7 @@ void inicializarUsuarios(Usuario usuarios[], int *contador) {
 		"BIB001",
 		"Carlos Bibliotecário",
 		"carlos@biblioteca.com",
-		"senha_grande",
+		"849747147",
 		BIBLIOTECARIO,
 		0,
 		{
@@ -706,8 +733,8 @@ void inicializarUsuarios(Usuario usuarios[], int *contador) {
 	Usuario leitor1 = {
 		"LEIT001",
 		"Lírio Nhamuze",
-		"lor6@email.com",
-		"hmmmmmmmm",
+		"lirio@email.com",
+		"864797364",
 		LEITOR,
 		0,
 		{
@@ -722,7 +749,7 @@ void inicializarUsuarios(Usuario usuarios[], int *contador) {
 		"LEIT002",
 		"Shelton Tamele",
 		"shelton@email.com",
-		"idk",
+		"862597379",
 		LEITOR,
 		0,
 		{
@@ -1452,6 +1479,7 @@ void menuAdmin(Usuario *usuarioAtual, Livro livros[], int *contadorLivros, Usuar
 		printf("Digite a opção: ");
 		scanf("%d", &opcao);
 		limparBufferEntrada();
+		limparTela();
 
 		switch(opcao) {
 			case 1: {
@@ -1505,7 +1533,8 @@ void menuAdmin(Usuario *usuarioAtual, Livro livros[], int *contadorLivros, Usuar
 								"1. Administrador"
 								"2. Bibliotecário"
 								"3. Leitor"
-								"\n");
+								"\n"
+							);
 
 							short int papelEntrada;
 							scanf("%hd", &papelEntrada);
@@ -1601,6 +1630,7 @@ void menuBibliotecario(Usuario *usuarioAtual, Livro livros[], int *contadorLivro
 		printf("Digite a opção: ");
 		scanf("%d", &opcao);
 		limparBufferEntrada();
+		limparTela();
 
 		switch(opcao) {
 			case 1: emprestarLivro(emprestimos, contadorEmprestimos, livros, *contadorLivros, usuarios, *contadorUsuarios, reservas, contadorReservas); pausarTela(); break;
@@ -1637,6 +1667,7 @@ void menuLeitor(Usuario *usuarioAtual, Livro livros[], int contadorLivros, Empre
 		printf("Digite a opção: ");
 		scanf("%d", &opcao);
 		limparBufferEntrada();
+		limparTela();
 
 		switch(opcao) {
 			case 1: pesquisarLivros(livros, contadorLivros); pausarTela(); break;
@@ -1715,6 +1746,7 @@ int main() {
 		Usuario *usuarioAtual = autenticarUsuario(usuarios, contadorUsuarios);
 
 		if (usuarioAtual != NULL) {
+			limparTela();
 			if (usuarioAtual->papel == ADMINISTRADOR) {
 				menuAdmin(usuarioAtual, livros, &contadorLivros, usuarios, &contadorUsuarios,
 					emprestimos, &contadorEmprestimos, reservas, &contadorReservas);
