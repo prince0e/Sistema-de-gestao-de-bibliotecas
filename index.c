@@ -48,6 +48,12 @@
 #define COR_VERDE "\033[32m"
 #define COR_VERMELHO "\033[31m"
 
+//Arquivos
+#define USUARIOS_ARQUIVO "usuarios.bin"
+#define LIVROS_ARQUIVO "livros.bin"
+#define EMPRESTIMOS_ARQUIVO "emprestimos.bin"
+#define RESERVAS_ARQUIVO "reservas.bin"
+
 //Estrutura de data
 typedef struct {
 	int dia;
@@ -323,77 +329,6 @@ void limparTela() {
 }
 
 //GERENCIAMENTO DE LIVROS
-
-void inicializarLivros(Livro livros[], int *contador) {
-	*contador = 0;
-	// Adiciona alguns livros de exemplo
-	Livro livrosExemplo[] = {
-		{
-			"978-0-7475-3269-9",
-			"Harry Potter e a Pedra Filosofal",
-			"J.K. Rowling",
-			"Bloomsbury",
-			"Fantasia",
-			1997,
-			5,
-			5,
-			"A1-Prateleira1",
-			1
-		},
-		{
-			"978-0-316-76948-0",
-			"O Apanhador no Campo de Centeio",
-			"J.D. Salinger",
-			"Little, Brown",
-			"Ficção",
-			1951,
-			3,
-			3,
-			"A1-Prateleira2",
-			1
-		},
-		{
-			"978-0-06-112008-4",
-			"O Sol é para Todos",
-			"Harper Lee",
-			"J.B. Lippincott",
-			"Ficção",
-			1960,
-			4,
-			4,
-			"A2-Prateleira1",
-			1
-		},
-		{
-			"978-1-4516-4553-3",
-			"A Arte da Programação de Computadores",
-			"Donald Knuth",
-			"Addison-Wesley",
-			"Tecnologia",
-			1968,
-			2,
-			2,
-			"B1-Prateleira1",
-			1
-		},
-		{
-			"978-0-306-40615-7",
-			"O Gene Egoísta",
-			"Richard Dawkins",
-			"Oxford University Press",
-			"Ciência",
-			1976,
-			3,
-			3,
-			"B2-Prateleira1",
-			1
-		}
-	};
-
-	for (int i = 0; i < 5; i++) {
-		livros[(*contador)++] = livrosExemplo[i];
-	}
-}
 
 int adicionarLivro(Livro livros[], int *contador) {
 	if (*contador >= MAX_LIVROS) {
@@ -695,75 +630,7 @@ void pesquisarLivros(const Livro livros[], int contador) {
 	if (!encontrados) printf("Nenhum livro encontrado com os critérios de pesquisa.\n");
 }
 
-//GERENCIAMENTO DE USUÁRIOS
-void inicializarUsuarios(Usuario usuarios[], int *contador) {
-	*contador = 0;
-
-	//Usuario administrador padrão
-	Usuario admin = {
-		"ADMIN001",
-		"Prince",
-		"prince@admin.com",
-		"843642532",
-		ADMINISTRADOR,
-		0,
-		{
-			""
-		},
-		1,
-		0.0
-	};
-	usuarios[(*contador)++] = admin;
-
-	// Adiciona bibliotecário padrão
-	Usuario bibliotecario = {
-		"BIB001",
-		"Carlos Bibliotecário",
-		"carlos@biblioteca.com",
-		"849747147",
-		BIBLIOTECARIO,
-		0,
-		{
-			""
-		},
-		1,
-		0.0
-	};
-	usuarios[(*contador)++] = bibliotecario;
-
-	// Adiciona leitores de exemplo
-	Usuario leitor1 = {
-		"LEIT001",
-		"Lírio Nhamuze",
-		"lirio@email.com",
-		"864797364",
-		LEITOR,
-		0,
-		{
-			""
-		},
-		1,
-		0.0
-	};
-	usuarios[(*contador)++] = leitor1;
-
-	Usuario leitor2 = {
-		"LEIT002",
-		"Shelton Tamele",
-		"shelton@email.com",
-		"862597379",
-		LEITOR,
-		0,
-		{
-			""
-		},
-		1,
-		0.0
-	};
-	usuarios[(*contador)++] = leitor2;
-}
-
-int registrarUsuario(Usuario usuarios[], int *contador, const Papel papel) {
+int registrarUsuario(FILE *usuarios, int *contador, const Papel papel) {
 	if (*contador >= MAX_USUARIOS) {
 		printf("Erro: Limite máximo de usuários atingido!\n");
 		return 0;
@@ -838,14 +705,14 @@ int encontrarUsuarioPorId(const Usuario usuarios[], int contador, const char *id
 	return -1;
 }
 
-Usuario* autenticarUsuario(Usuario usuarios[], int contador) {
+Usuario* autenticarUsuario() {
 	char idUsuario[TAM_ID];
 	printf("\n--- Login no Sistema da Biblioteca ---\n");
 	printf("Digite o ID do Usuário: ");
 	fgets(idUsuario, TAM_ID, stdin);
 	idUsuario[strcspn(idUsuario, "\n")] = 0;
 
-	int indice = encontrarUsuarioPorId(usuarios, contador, idUsuario);
+	int indice = encontrarUsuarioPorId(idUsuario);
 	if (indice != -1) {
 		printf("Bem-vindo, %s!\n", usuarios[indice].nome);
 		return &usuarios[indice];
@@ -1716,21 +1583,33 @@ void exibirTodosUsuarios(const Usuario usuarios[], int numeroDeUsuarios) {
 //função principal
 int main() {
 	//Inicializa todas as estruturas de dados
-	Livro livros[MAX_LIVROS];
 	int contadorLivros;
 	inicializarLivros(livros, &contadorLivros);
 
-	Usuario usuarios[MAX_USUARIOS];
 	int contadorUsuarios;
 	inicializarUsuarios(usuarios, &contadorUsuarios);
-
-	Emprestimo emprestimos[MAX_EMPRESTIMOS];
 	int contadorEmprestimos;
 	inicializarEmprestimos(emprestimos, &contadorEmprestimos);
 
-	Reserva reservas[MAX_RESERVAS];
 	int contadorReservas;
 	inicializarReservas(reservas, &contadorReservas);
+
+	FILE *usuariosArquivo = fopen(USUARIOS_ARQUIVO, "rb+");
+	if (usuariosArquivo == NULL)
+		usuariosArquivo = fopen(USUARIOS_ARQUIVO, "wb+");
+
+	FILE *livrosArquivo = fopen(LIVROS_ARQUIVO, "rb+");
+		if (livrosArquivo == NULL)
+			livrosArquivo = fopen(LIVROS_ARQUIVO, "wb+");
+
+	FILE *emprestimosArquivor = fopen(EMPRESTIMOS_ARQUIVO, "rb+");
+		if (emprestimosArquivo == NULL)
+			emprestimosArquivo = fopen(EMPRESTIMOS_ARQUIVO, "wb+");
+
+	FILE *reservasArquivo = fopen(RESERVAS_ARQUIVO, "rb+");
+		if (reservasArquivo == NULL)
+			reservasArquivo = fopen(RESERVAS_ARQUIVO, "wb+");
+
 
 	//exibir logo
 	exibirLogo();
@@ -1745,9 +1624,21 @@ int main() {
 		COR_RESET
 	);
 
-	while (1) {
-		//repete até o usuário não desejar continuar
-		Usuario *usuarioAtual = autenticarUsuario(usuarios, contadorUsuarios);
+	while (1) { //repete até o usuário não desejar continuar
+		Usuario *usuarioAtual;
+
+		FILE *usuariosArquivo = fopen(USUARIOS_ARQUIVO, "rb");
+
+		if (usuariosArquivo == NULL || !fread(&usuarioAtual, sizeof(Usuario), 1, usuariosArquivo)){
+			printf("Nenhum usuário encontrado!\n");
+			Papel papel = ADMINISTRADOR;
+			registrarUsuario(papel);
+			continue;
+		}
+
+		fclose(usuariosArquivo);
+
+		usuarioAtual = autenticarUsuario();
 
 		if (usuarioAtual != NULL) {
 			limparTela();
@@ -1766,7 +1657,7 @@ int main() {
 
 		//pergunta se o usuário deseja continuar
 		printf("\nDeseja continuar? (1=Sim, 0=Sair): ");
-		short int opcaoContinuar; //tipo short para poupar memória
+		short int opcaoContinuar; //tipo short porque gasta menos memória
 
 		scanf("%hd", &opcaoContinuar);
 		limparBufferEntrada();
