@@ -36,17 +36,17 @@
 #define MAX_EMPRESTIMOS_POR_USUARIO 5
 
 //Cores para estilizar a interface
-#define COR_RESET "\033[0m"
-#define COR_BOLD "\033[1m"
-#define COR_VERDE "\033[32m"
 #define COR_AMARELO "\033[33m"
 #define COR_AZUL "\033[34m"
-#define COR_MAGENTA "\033[35m"
-#define COR_CIANO "\033[36m"
-#define COR_BRANCO "\033[37m"
-#define COR_VERMELHO "\033[31m"
+#define COR_BOLD "\033[1m"
 #define COR_BG_ESCURO "\033[48;5;235m"
+#define COR_BRANCO "\033[37m"
+#define COR_CIANO "\033[36m"
 #define COR_CINZA "\033[90m"
+#define COR_MAGENTA "\033[35m"
+#define COR_RESET "\033[0m"
+#define COR_VERDE "\033[32m"
+#define COR_VERMELHO "\033[31m"
 
 //Estrutura de data
 typedef struct {
@@ -114,6 +114,7 @@ typedef struct {
 	int foiAtendida;
 } Reserva;
 
+//Funções para gerenciamento de livros
 void inicializarLivros(Livro livros[], int *contador);
 int adicionarLivro(Livro livros[], int *contador);
 int atualizarLivro(Livro livros[], int contador);
@@ -123,7 +124,7 @@ void exibirTodosLivros(const Livro livros[], int contador);
 int encontrarLivroPorISBN(const Livro livros[], int contador, const char *isbn);
 void pesquisarLivros(const Livro livros[], int contador);
 
-// Declarações de funções para Gerenciamento de Usuários
+//  funções para Gerenciamento de Usuários
 void inicializarUsuarios(Usuario usuarios[], int *contador);
 int registrarUsuario(Usuario usuarios[], int *contador, const Papel papel);
 int atualizarUsuario(Usuario usuarios[], int contador);
@@ -133,7 +134,7 @@ void exibirTodosUsuarios(const Usuario usuarios[], int contador);
 int encontrarUsuarioPorId(const Usuario usuarios[], int contador, const char *id);
 Usuario* autenticarUsuario(Usuario usuarios[], int contador);
 
-// Declarações de funções para Operações de Empréstimo
+//funções para Operações de Empréstimo
 void inicializarEmprestimos(Emprestimo emprestimos[], int *contador);
 int emprestarLivro(Emprestimo emprestimos[], int *contadorEmprestimos, Livro livros[], int contadorLivros,
 	Usuario usuarios[], int contadorUsuarios, Reserva reservas[], int *contadorReservas);
@@ -145,14 +146,14 @@ void exibirEmprestimosAtivos(const Emprestimo emprestimos[], int contador, const
 void exibirEmprestimosUsuario(const Emprestimo emprestimos[], int contador, const char *idUsuario,
 	const Livro livros[], int contadorLivros);
 
-// Declarações de funções para Reservas
+//funções para reservas
 void inicializarReservas(Reserva reservas[], int *contador);
 int fazerReserva(Reserva reservas[], int *contador, const char *idUsuario,
 	const Livro livros[], int contadorLivros);
 void visualizarReservas(const Reserva reservas[], int contador, const char *idUsuario,
 	const Livro livros[], int contadorLivros);
 
-// Declarações de funções para Relatórios
+//funções para Relatórios
 void gerarRelatorioMaisEmprestados(const Emprestimo emprestimos[], int contadorEmprestimos,
 	const Livro livros[], int contadorLivros);
 void gerarRelatorioLivrosDisponiveis(const Livro livros[], int contador);
@@ -282,6 +283,7 @@ void pausarTela() {
 void exibirLogo() {
 	printf(//Desenho de livro magnífico usando símbolos
 		COR_VERDE
+		"\n"
 		"            /;\n"
 		"           / |'-,.\n"
 		"          /  '    `\"---,.__\n"
@@ -1162,9 +1164,8 @@ void exibirEmprestimosAtivos(const Emprestimo emprestimos[], int contador, const
 		}
 	}
 
-	if (!encontrados) {
+	if (!encontrados)
 		printf("Nenhum empréstimo ativo.\n");
-	}
 }
 
 void exibirEmprestimosUsuario(const Emprestimo emprestimos[], int contador, const char *idUsuario,
@@ -1350,9 +1351,7 @@ void gerarRelatorioLivrosDisponiveis(const Livro livros[], int contador) {
 		}
 	}
 
-	if (!encontrados) {
-		printf("Nenhum livro disponível.\n");
-	}
+	if (!encontrados) printf("Nenhum livro disponível.\n");
 }
 
 void gerarRelatorioLivrosAtrasados(const Emprestimo emprestimos[], int contadorEmprestimos,
@@ -1380,9 +1379,7 @@ void gerarRelatorioLivrosAtrasados(const Emprestimo emprestimos[], int contadorE
 		}
 	}
 
-	if (!encontrados) {
-		printf("Nenhum livro atrasado.\n");
-	}
+	if (!encontrados) printf("Nenhum livro atrasado.\n");
 }
 
 void gerarRelatorioMultas(const Emprestimo emprestimos[], int contadorEmprestimos, const Usuario usuarios[], int contadorUsuarios) {
@@ -1476,8 +1473,10 @@ void menuAdmin(Usuario *usuarioAtual, Livro livros[], int *contadorLivros, Usuar
 			"║ 0. Sair                           ║\n"
 			"╚════════════════════════════════════╝\n"
 		);
+
 		printf("Digite a opção: ");
 		scanf("%d", &opcao);
+
 		limparBufferEntrada();
 		limparTela();
 
@@ -1497,6 +1496,7 @@ void menuAdmin(Usuario *usuarioAtual, Livro livros[], int *contadorLivros, Usuar
 						"Digite a opção: "
 					);
 					scanf("%d", &opcaoLivro);
+
 					limparBufferEntrada();
 
 					switch(opcaoLivro) {
@@ -1529,10 +1529,10 @@ void menuAdmin(Usuario *usuarioAtual, Livro livros[], int *contadorLivros, Usuar
 					switch(opcaoUsuario) {
 						case 1: {
 							printf(
-								"Escolha o papel: "
-								"1. Administrador"
-								"2. Bibliotecário"
-								"3. Leitor"
+								"Escolha o papel:\n"
+								"\t1. Administrador"
+								"\t2. Bibliotecário"
+								"\t3. Leitor"
 								"\n"
 							);
 
@@ -1626,9 +1626,10 @@ void menuBibliotecario(Usuario *usuarioAtual, Livro livros[], int *contadorLivro
 			"║ 6. Visualizar Livros Atrasados      ║\n"
 			"║ 0. Sair                             ║\n"
 			"╚════════════════════════════════════╝\n"
+			"Digite a opção: "
 		);
-		printf("Digite a opção: ");
 		scanf("%d", &opcao);
+
 		limparBufferEntrada();
 		limparTela();
 
@@ -1664,8 +1665,10 @@ void menuLeitor(Usuario *usuarioAtual, Livro livros[], int contadorLivros, Empre
 			"╚════════════════════════════════════╝"
 			"\n"
 			, usuarioAtual->nome);
+
 		printf("Digite a opção: ");
 		scanf("%d", &opcao);
+
 		limparBufferEntrada();
 		limparTela();
 
@@ -1731,6 +1734,7 @@ int main() {
 
 	//exibir logo
 	exibirLogo();
+
 	//mensagem de boas vindas
 	printf(
 		COR_AMARELO
@@ -1747,6 +1751,7 @@ int main() {
 
 		if (usuarioAtual != NULL) {
 			limparTela();
+
 			if (usuarioAtual->papel == ADMINISTRADOR) {
 				menuAdmin(usuarioAtual, livros, &contadorLivros, usuarios, &contadorUsuarios,
 					emprestimos, &contadorEmprestimos, reservas, &contadorReservas);
@@ -1762,6 +1767,7 @@ int main() {
 		//pergunta se o usuário deseja continuar
 		printf("\nDeseja continuar? (1=Sim, 0=Sair): ");
 		short int opcaoContinuar; //tipo short para poupar memória
+
 		scanf("%hd", &opcaoContinuar);
 		limparBufferEntrada();
 
