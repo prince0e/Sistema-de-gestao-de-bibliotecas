@@ -135,52 +135,41 @@ typedef struct
 } Contadores;
 
 // Funções para gerenciamento de livros
-void inicializarLivros(Livro livros[], int *contador);
-int adicionarLivro(Livro livros[], int *contador);
-int atualizarLivro(Livro livros[], int contador);
-int excluirLivro(Livro livros[], int contador);
+int adicionarLivro();
+int atualizarLivro();
+int excluirLivro();
 void exibirLivro(const Livro *livro);
-void exibirTodosLivros(const Livro livros[], int contador);
-int encontrarLivroPorISBN(const Livro livros[], int contador, const char *isbn);
-void pesquisarLivros(const Livro livros[], int contador);
+void exibirTodosLivros();
+int encontrarLivroPorISBN(const char *isbn, Livro *livro);
+void pesquisarLivros();
 
 //  funções para Gerenciamento de Usuários
-void inicializarUsuarios(Usuario usuarios[], int *contador);
-int registrarUsuario(Usuario usuarios[], int *contador, const Papel papel);
-int atualizarUsuario(Usuario usuarios[], int contador);
-int excluirUsuario(Usuario usuarios[], int contador);
+int registrarUsuario(const Papel papel);
+int atualizarUsuario();
+int excluirUsuario();
 void exibirUsuario(const Usuario *usuario);
-void exibirTodosUsuarios(const Usuario usuarios[], int contador);
-int encontrarUsuarioPorId(const Usuario usuarios[], int contador, const char *id);
-Usuario *autenticarUsuario(Usuario usuarios[], int contador);
+void exibirTodosUsuarios();
+int encontrarUsuarioPorId(const char *id, Usuario *usuario);
+int autenticarUsuario(Usuario *usuario);
 
 // funções para Operações de Empréstimo
-void inicializarEmprestimos(Emprestimo emprestimos[], int *contador);
-int emprestarLivro(Emprestimo emprestimos[], int *contadorEmprestimos, Livro livros[], int contadorLivros,
-				   Usuario usuarios[], int contadorUsuarios, Reserva reservas[], int *contadorReservas);
-int devolverLivro(Emprestimo emprestimos[], int contadorEmprestimos, Livro livros[], int contadorLivros,
-				  Usuario usuarios[], int contadorUsuarios);
-int renovarLivro(Emprestimo emprestimos[], int contadorEmprestimos, Livro livros[], int contadorLivros);
+int emprestarLivro();
+int devolverLivro();
+int renovarLivro();
 void calcularMulta(Emprestimo *emprestimo);
-void exibirEmprestimosAtivos(const Emprestimo emprestimos[], int contador, const Livro livros[], int contadorLivros);
-void exibirEmprestimosUsuario(const Emprestimo emprestimos[], int contador, const char *idUsuario,
-							  const Livro livros[], int contadorLivros);
+void exibirEmprestimosAtivos();
+void exibirEmprestimosUsuario(const char *idUsuario);
 
 // funções para reservas
-void inicializarReservas(Reserva reservas[], int *contador);
-int fazerReserva(Reserva reservas[], int *contador, const char *idUsuario,
-				 const Livro livros[], int contadorLivros);
-void visualizarReservas(const Reserva reservas[], int contador, const char *idUsuario,
-						const Livro livros[], int contadorLivros);
+int fazerReserva(const char * idUsuario);
+void visualizarReservas(const char *idUsuario);
 
 // funções para Relatórios
-void gerarRelatorioMaisEmprestados(const Emprestimo emprestimos[], int contadorEmprestimos,
-								   const Livro livros[], int contadorLivros);
-void gerarRelatorioLivrosDisponiveis(const Livro livros[], int contador);
-void gerarRelatorioLivrosAtrasados(const Emprestimo emprestimos[], int contadorEmprestimos,
-								   const Livro livros[], int contadorLivros);
-void gerarRelatorioMultas(const Emprestimo emprestimos[], int contadorEmprestimos, const Usuario usuarios[], int contadorUsuarios);
-void gerarEstatisticasUso(const Emprestimo emprestimos[], int contadorEmprestimos);
+void gerarRelatorioMaisEmprestados();
+void gerarRelatorioLivrosDisponiveis();
+void gerarRelatorioLivrosAtrasados();
+void gerarRelatorioMultas();
+void gerarEstatisticasUso();
 
 // Funções utilitárias
 Data obterDataAtual();
@@ -193,15 +182,12 @@ void imprimirSeparador();
 void pausarTela();
 void exibirLogo();
 void limparTela();
-void papelParaTexto(Papel papel);
+char *papelParaTexto(Papel papel);
 
 // Funções de menu
-void menuAdmin(Usuario *usuarioAtual, Livro livros[], int *contadorLivros, Usuario usuarios[], int *contadorUsuarios,
-			   Emprestimo emprestimos[], int *contadorEmprestimos, Reserva reservas[], int *contadorReservas);
-void menuBibliotecario(Usuario *usuarioAtual, Livro livros[], int *contadorLivros, Usuario usuarios[], int *contadorUsuarios,
-					   Emprestimo emprestimos[], int *contadorEmprestimos, Reserva reservas[], int *contadorReservas);
-void menuLeitor(Usuario *usuarioAtual, Livro livros[], int contadorLivros, Emprestimo emprestimos[], int contadorEmprestimos,
-				Reserva reservas[], int *contadorReservas);
+void menuAdmin(Usuario *usuarioAtual);
+void menuBibliotecario(Usuario *usuarioAtual);
+void menuLeitor(Usuario *usuarioAtual);
 
 #endif
 
@@ -449,7 +435,7 @@ int adicionarLivro()
 	return 1;
 }
 
-int atualizarLivro(Livro livros[], int contador)
+int atualizarLivro()
 {
 	char isbn[TAM_ISBN];
 	printf("\n--- Atualizar Informações do Livro ---\n");
@@ -1407,7 +1393,7 @@ void exibirEmprestimosUsuario(const char *idUsuario)
 
 // SISTEMA DE RESERVAS
 
-int fazerReserva()
+int fazerReserva(const char *idUsuario)
 {
 	char isbn[TAM_ISBN];
 	printf("Digite o ISBN do livro para reservar: ");
@@ -1661,7 +1647,7 @@ void gerarRelatorioLivrosAtrasados()
 		printf("\nTotal de Livros Atrasados: %d\n", encontrados);
 }
 
-void gerarRelatorioMultas(const Emprestimo emprestimos[], int contadorEmprestimos, const Usuario usuarios[], int contadorUsuarios)
+void gerarRelatorioMultas()
 {
 	printf("\n=== RELATÓRIO DE MULTAS ===\n");
 
@@ -1911,10 +1897,10 @@ void menuAdmin(Usuario *usuarioAtual)
 
 					registrarUsuario(usuarios, contadorUsuarios, papel);
 					break;
-				}
-				case 2: /* atualizarUsuario(usuarios, *contadorUsuarios); */
+				}.
+				case 2: /* atualizarUsuario(); */
 					break;
-				case 3: /* excluirUsuario(usuarios, *contadorUsuarios); */
+				case 3: /* excluirUsuario(); */
 					break;
 				case 4:
 					exibirTodosUsuarios(usuarios, *contadorUsuarios);
@@ -1987,8 +1973,7 @@ void menuAdmin(Usuario *usuarioAtual)
 	} while (opcao != 0);
 }
 
-void menuBibliotecario(Usuario *usuarioAtual, Livro livros[], int *contadorLivros, Usuario usuarios[], int *contadorUsuarios,
-					   Emprestimo emprestimos[], int *contadorEmprestimos, Reserva reservas[], int *contadorReservas)
+void menuBibliotecario(Usuario *usuarioAtual)
 {
 	int opcao;
 
@@ -2016,35 +2001,34 @@ void menuBibliotecario(Usuario *usuarioAtual, Livro livros[], int *contadorLivro
 		switch (opcao)
 		{
 		case 1:
-			emprestarLivro(emprestimos, contadorEmprestimos, livros, *contadorLivros, usuarios, *contadorUsuarios, reservas, contadorReservas);
+			emprestarLivro();
 			pausarTela();
 			break;
 		case 2:
-			devolverLivro(emprestimos, *contadorEmprestimos, livros, *contadorLivros, usuarios, *contadorUsuarios);
+			devolverLivro();
 			pausarTela();
 			break;
 		case 3:
-			renovarLivro(emprestimos, *contadorEmprestimos, livros, *contadorLivros);
+			renovarLivro();
 			pausarTela();
 			break;
 		case 4:
-			exibirEmprestimosAtivos(emprestimos, *contadorEmprestimos, livros, *contadorLivros);
+			exibirEmprestimosAtivos();
 			pausarTela();
 			break;
 		case 5:
-			pesquisarLivros(livros, *contadorLivros);
+			pesquisarLivros();
 			pausarTela();
 			break;
 		case 6:
-			gerarRelatorioLivrosAtrasados(emprestimos, *contadorEmprestimos, livros, *contadorLivros);
+			gerarRelatorioLivrosAtrasados();
 			pausarTela();
 			break;
 		}
 	} while (opcao != 0);
 }
 
-void menuLeitor(Usuario *usuarioAtual, Livro livros[], int contadorLivros, Emprestimo emprestimos[], int contadorEmprestimos,
-				Reserva reservas[], int *contadorReservas)
+void menuLeitor(Usuario *usuarioAtual)
 {
 	int opcao;
 
@@ -2076,7 +2060,7 @@ void menuLeitor(Usuario *usuarioAtual, Livro livros[], int contadorLivros, Empre
 		switch (opcao)
 		{
 		case 1:
-			pesquisarLivros(livros, contadorLivros);
+			pesquisarLivros();
 			pausarTela();
 			break;
 		case 2:
@@ -2084,40 +2068,51 @@ void menuLeitor(Usuario *usuarioAtual, Livro livros[], int contadorLivros, Empre
 			pausarTela();
 			break;
 		case 3:
-			fazerReserva(reservas, contadorReservas, usuarioAtual->id, livros, contadorLivros);
+			fazerReserva(usuarioAtual->id);
 			pausarTela();
 			break;
 		case 4:
-			visualizarReservas(reservas, *contadorReservas, usuarioAtual->id, livros, contadorLivros);
+			visualizarReservas(usuarioAtual->id);
 			pausarTela();
 			break;
 		case 5:
 			// exibe as multas do leitor
 			printf("\n--- Suas Multas ---\n");
-			printf("Total de Multas Pendentes: R$%.2f\n", usuarioAtual->multasTotais);
+			printf("Total de Multas Pendentes: %.2fMZN\n", usuarioAtual->multasTotais);
 			pausarTela();
 			break;
 		}
 	} while (opcao != 0);
 }
 
-void exibirTodosUsuarios(const Usuario usuarios[], int numeroDeUsuarios)
+void exibirTodosUsuarios()
 {
 	printf("\n--- Todos os Usuários ---\n");
+
+	FILE *arquivoUsuarios = fopen(USUARIOS_ARQUIVO, "rb");
+	if (arquivoUsuarios == NULL)
+	{
+		printf("Erro: Não foi possível abrir o arquivo de usuários!\n");
+		return;
+	}
+
 	printf("%-10s %-20s %-15s %-10s\n", "ID", "Nome", "Papel", "Empréstimos");
 	imprimirSeparador();
 
-	for (int i = 0; i < numeroDeUsuarios; i++)
+	Usuario usuario;
+	while (fread(&usuario, sizeof(Usuario), 1, arquivoUsuarios))
 	{
-		if (usuarios[i].estaAtivo)
+		if (usuario.estaAtivo)
 		{
-			printf("%-10s %-20s ", usuarios[i].id, usuarios[i].nome);
+			printf("%-10s %-20s ", usuario.id, usuario.nome);
 
-			printf("%s", papelParaTexto(usuarios[i].papel));
+			printf("%s", papelParaTexto(usuario.papel));
 
-			printf(" %d\n", usuarios[i].contadorEmprestimos);
+			printf(" %d\n", usuario.contadorEmprestimos);
 		}
 	}
+
+	fclose(arquivoUsuarios);
 }
 
 // função principal
@@ -2162,13 +2157,11 @@ int main()
 			}
 			else if (usuarioAtual->papel == BIBLIOTECARIO)
 			{
-				menuBibliotecario(usuarioAtual, livros, &contadorLivros, usuarios, &contadorUsuarios,
-								  emprestimos, &contadorEmprestimos, reservas, &contadorReservas);
+				menuBibliotecario(usuarioAtual);
 			}
 			else if (usuarioAtual->papel == LEITOR)
 			{
-				menuLeitor(usuarioAtual, livros, contadorLivros, emprestimos, contadorEmprestimos,
-						   reservas, &contadorReservas);
+				menuLeitor(usuarioAtual);
 			}
 			else
 				printf("Papel de usuário inválido!\n");
