@@ -1734,27 +1734,35 @@ void gerarRelatorioMultas(const Emprestimo emprestimos[], int contadorEmprestimo
 	}
 }
 
-void gerarEstatisticasUso(const Emprestimo emprestimos[], int contadorEmprestimos)
+void gerarEstatisticasUso()
 {
 	printf("\n=== ESTATÍSTICAS DE USO ===\n");
+
+	FILE *arquivoEmprestimos = fopen(EMPRESTIMOS_ARQUIVO, "rb");
+	if (arquivoEmprestimos == NULL)
+	{
+		printf("Erro: Não foi possível abrir o arquivo de empréstimos!\n");
+		return;
+	}
 
 	int emprestimosAtivos = 0;
 	int emprestimosDevolvidos = 0;
 	int emprestimosAtrasados = 0;
 	Data hoje = obterDataAtual();
 
-	for (int i = 0; i < contadorEmprestimos; i++)
+	Emprestimo emprestimo;
+	while (fread(&emprestimo, sizeof(Emprestimo), 1, arquivoEmprestimos) == 1)
 	{
-		if (emprestimos[i].estaAtivo)
+		if (emprestimo.estaAtivo)
 		{
-			if (emprestimos[i].foiDevolvido)
+			if (emprestimo.foiDevolvido)
 			{
 				emprestimosDevolvidos++;
 			}
 			else
 			{
 				emprestimosAtivos++;
-				if (diasEntre(emprestimos[i].dataVencimento, hoje) > 0)
+				if (diasEntre(emprestimo.dataVencimento, hoje) > 0)
 				{
 					emprestimosAtrasados++;
 				}
@@ -1762,11 +1770,18 @@ void gerarEstatisticasUso(const Emprestimo emprestimos[], int contadorEmprestimo
 		}
 	}
 
-	printf("Total de Empréstimos: %d\n", contadorEmprestimos);
-	printf("Empréstimos Ativos: %d\n", emprestimosAtivos);
-	printf("Empréstimos Devolvidos: %d\n", emprestimosDevolvidos);
-	printf("Empréstimos Atrasados: %d\n", emprestimosAtrasados);
-	printf("Taxa de Devolução: %.2f%%\n", contadorEmprestimos > 0 ? ((float)emprestimosDevolvidos / contadorEmprestimos * 100) : 0);
+	printf(
+		"Total de Empréstimos: %d\n"
+		"Empréstimos Ativos: %d\n"
+		"Empréstimos Devolvidos: %d\n"
+		"Empréstimos Atrasados: %d\n"
+		"Taxa de Devolução: %.2f%%\n",
+		contadorEmprestimos,
+		emprestimosAtivos,
+		emprestimosDevolvidos,
+		emprestimosAtrasados,
+		contadorEmprestimos > 0 ? ((float)emprestimosDevolvidos / contadorEmprestimos * 100) : 0
+	);
 }
 
 // SISTEMA DE MENU
