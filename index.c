@@ -739,7 +739,7 @@ int registrarUsuario(const Papel papel) {
 	}
 
 	Contador contadores;
-	fread(arquivoContadores, sizeof(Contadores), 1, &contadores)
+	fread(&contadores, sizeof(Contadores), 1, arquivoContadores);
 
 	if (contadores.contadorUsuarios >= MAX_USUARIOS) {
 		printf("Erro: Limite máximo de usuários atingido!\n");
@@ -776,7 +776,7 @@ int registrarUsuario(const Papel papel) {
 	novoUsuario.multasTotais = 0.0;
 
 	FILE *arquivoUsuarios = fopen(USUARIOS_ARQUIVO, "ab");
-	fwrite(arquivoUsuarios, sizeof(Usuario), 1, &novoUsuario);
+	fwrite(&novoUsuario, sizeof(Usuario), 1, arquivoUsuarios);
 
 	printf("Usuário registrado com sucesso!\n");
 	return 1;
@@ -843,7 +843,7 @@ int autenticarUsuario(Usuario *usuario) {
 }
 
 int emprestarLivro() {
-	FILE *arquivoContadores = fopen(CONTADORES_ARQUIVO, "rb");
+	FILE *arquivoContadores = fopen(CONTADORES_ARQUIVO, "rb+");
 	
 	if(arquivoContadores == NULL) {
 		printf("Erro: Não foi possível abrir o arquivo de contadores!\n");
@@ -851,7 +851,7 @@ int emprestarLivro() {
 	}
 
 	Contador contadores;
-	fread(arquivoContadores, sizeof(Contadores), 1, &contadores);
+	fread(&contadores, sizeof(Contadores), 1, arquivoContadores);
 
 	if (contadores.contadorEmprestimos >= MAX_EMPRESTIMOS) {
 		printf("Erro: Limite máximo de empréstimos atingido!\n");
@@ -865,7 +865,9 @@ int emprestarLivro() {
 	fgets(idUsuario, TAM_ID, stdin);
 	idUsuario[strcspn(idUsuario, "\n")] = 0;
 
-	int indiceUsuario = encontrarUsuarioPorId(usuarios, contadorUsuarios, idUsuario);
+	Usuario usuario;
+
+	int indiceUsuario = encontrarUsuarioPorId(idUsuario, &usuario);
 	if (indiceUsuario == -1) {
 		printf("Erro: Usuário não encontrado!\n");
 		return 0;
@@ -881,13 +883,15 @@ int emprestarLivro() {
 	fgets(isbn, TAM_ISBN, stdin);
 	isbn[strcspn(isbn, "\n")] = 0;
 
-	int indiceLivro = encontrarLivroPorISBN(livros, contadorLivros, isbn);
+	Livro livro;
+
+	int indiceLivro = encontrarLivroPorISBN(isbn, &livro);
 	if (indiceLivro == -1) {
 		printf("Erro: Livro não encontrado!\n");
 		return 0;
 	}
 
-	if (livros[indiceLivro].copiasDisponiveis <= 0) {
+	if (livro.copiasDisponiveis <= 0) {
 		printf("Livro está atualmente indisponível.\n");
 		printf("Deseja fazer uma reserva? (1=Sim, 0=Não): ");
 		int opcao;
@@ -945,34 +949,52 @@ int emprestarLivro() {
 	novoEmprestimo.estaAtivo = 1;
 
 	// Atualiza disponibilidade do livro
-	livros[indiceLivro].copiasDisponiveis--;
+	livro.copiasDisponiveis--;
 
 	// Atualiza contador de empréstimos e histórico do usuário
-	usuarios[indiceUsuario].contadorEmprestimos++;
-	for (int i = 0; i < 50; i++) {
-		if (strlen(usuarios[indiceUsuario].historicoEmprestimos[i]) == 0) {
-			strcpy(usuarios[indiceUsuario].historicoEmprestimos[i], isbn);
+	usuario.contadorEmprestimos++;
+	for (int i = 0; i < 50; i++)
+		if (strlen(usuario.historicoEmprestimos[i]) == 0) {
+			strcpy(usuario.historicoEmprestimos[i], isbn);
 			break;
 		}
-	}
 
-	emprestimos[*contadorEmprestimos] = novoEmprestimo;
-	(*contadorEmprestimos)++;
+	FILE *arquivoEmprestimos = fopen(EMPRESTIMOS_ARQUIVO, "ab");
+	fwrite(&novoEmprestimo, sizeof(Emprestimo), 1, arquivoEmprestimos);
+	fclose(arquivoEmprestimos);
+
+	contadores.contadorEmprestimos++;
+	fseek(arquivoContadores, sizeof(Contadores) * -1, SEEK_SET);
+	fwrite(&contadores, sizeof(Contadores), 1, arquivoContadores);
+	fclose(arquivoContadores);
 
 	printf("Livro emprestado com sucesso!\n");
 	printf("Data de Vencimento: %02d/%02d/%d\n", novoEmprestimo.dataVencimento.dia, novoEmprestimo.dataVencimento.mes, novoEmprestimo.dataVencimento.ano);
 
 	// Verifica se o usuário tinha uma reserva para este livro
-	for (int i = 0; i < *contadorReservas; i++) {
-		if (reservas[i].estaAtivo && !reservas[i].foiAtendida &&
-			strcmp(reservas[i].idUsuario, idUsuario) == 0 &&
-			strcmp(reservas[i].isbn, isbn) == 0) {
-			reservas[i].foiAtendida = 1;
-			printf("Sua reserva para este livro foi atendida.\n");
-			break;
-		}
+	FILE *arquivoReservas = fopen(RESERVAS_ARQUIVO, "rb+");
+	if (arquivoReservas == NULL) {
+		printf("Erro: Não foi possível abrir o arquivo de reservas!\n");
+		return 0;
 	}
 
+	Reserva reserva;
+	for (int i = 0; i < contadores.contadorReservas; i++) {
+		if(fread(&reserva, sizeof(Reserva), 1, arquivoReservas))
+			if (reserva.estaAtivo && !reserva.foiAtendida &&
+				strcmp(reserva.idUsuario, idUsuario) == 0 &&
+				strcmp(reserva.isbn, isbn) == 0) {
+				reserva.foiAtendida = 1;
+
+				fseek(arquivoReservas, sizeof(Reserva) * -1, SEEK_CUR);
+				fwrite(&reserva, sizeof(Reserva), 1, arquivoReservas);
+				
+				printf("Sua reserva para este livro foi atendida.\n");
+				break;
+			}
+	}
+
+	fclose(arquivoReservas);
 	return 1;
 }
 
