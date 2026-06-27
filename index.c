@@ -53,6 +53,7 @@
 #define LIVROS_ARQUIVO "livros.bin"
 #define EMPRESTIMOS_ARQUIVO "emprestimos.bin"
 #define RESERVAS_ARQUIVO "reservas.bin"
+#define CONTADORES_ARQUIVO "contadores.bin"
 
 //Estrutura de data
 typedef struct {
@@ -119,6 +120,13 @@ typedef struct {
 	int estaAtivo;
 	int foiAtendida;
 } Reserva;
+
+typedef struct {
+	int contadorLivros;
+	int contadorUsuarios;
+	int contadorEmprestimos;
+	int contadorReservas;
+} Contadores;
 
 //Funções para gerenciamento de livros
 void inicializarLivros(Livro livros[], int *contador);
@@ -344,7 +352,7 @@ char* papelParaTexto(Papel papel) {
 
 //GERENCIAMENTO DE LIVROS
 
-int adicionarLivro(Livro livros[], int *contador) {
+int adicionarLivro() {
 	if (*contador >= MAX_LIVROS) {
 		printf("Erro: Limite máximo de livros atingido!\n");
 		return 0;
@@ -1342,8 +1350,7 @@ void gerarEstatisticasUso(const Emprestimo emprestimos[], int contadorEmprestimo
 
 //SISTEMA DE MENU
 
-void menuAdmin(Usuario *usuarioAtual, Livro livros[], int *contadorLivros, Usuario usuarios[], int *contadorUsuarios,
-	Emprestimo emprestimos[], int *contadorEmprestimos, Reserva reservas[], int *contadorReservas) {
+void menuAdmin(Usuario *usuarioAtual) {
 	int opcao;
 
 	do {
@@ -1373,13 +1380,17 @@ void menuAdmin(Usuario *usuarioAtual, Livro livros[], int *contadorLivros, Usuar
 				do {
 					printf(
 						"\n"
-						"--- Gerenciamento de Livros ---\n"
-						"1. Adicionar Livro\n"
-						"2. Atualizar Livro\n"
-						"3. Excluir Livro\n"
-						"4. Visualizar Todos os Livros\n"
-						"5. Pesquisar Livros\n"
-						"0. Voltar\n"
+						"╔════════════════════════════════════╗\n"
+						"║ Gerenciamento de Livros            ║\n"
+						"╠════════════════════════════════════╣\n"
+						"║ 1. Adicionar Livro                 ║\n"
+						"║ 2. Atualizar Livro                 ║\n"
+						"║ 3. Excluir Livro                   ║\n"
+						"║ 4. Visualizar Todos os Livros      ║\n"
+						"║ 5. Pesquisar Livros                ║\n"
+						"║ 0. Voltar                          ║\n"
+						"╚════════════════════════════════════╝\n"
+						"\n"
 						"Digite a opção: "
 					);
 					scanf("%d", &opcaoLivro);
@@ -1387,11 +1398,11 @@ void menuAdmin(Usuario *usuarioAtual, Livro livros[], int *contadorLivros, Usuar
 					limparBufferEntrada();
 
 					switch(opcaoLivro) {
-						case 1: adicionarLivro(livros, contadorLivros); break;
-						case 2: atualizarLivro(livros, *contadorLivros); break;
-						case 3: excluirLivro(livros, *contadorLivros); break;
-						case 4: exibirTodosLivros(livros, *contadorLivros); pausarTela(); break;
-						case 5: pesquisarLivros(livros, *contadorLivros); pausarTela(); break;
+						case 1: adicionarLivro(); break;
+						case 2: atualizarLivro(); break;
+						case 3: excluirLivro(); break;
+						case 4: exibirTodosLivros(); pausarTela(); break;
+						case 5: pesquisarLivros(); pausarTela(); break;
 					}
 				} while(opcaoLivro != 0);
 				break;
@@ -1402,12 +1413,16 @@ void menuAdmin(Usuario *usuarioAtual, Livro livros[], int *contadorLivros, Usuar
 				do {
 					printf(
 						"\n"
-						"--- Gerenciamento de Usuários ---\n"
-						"1. Registrar Usuário\n"
-						"2. Atualizar Usuário\n"
-						"3. Excluir Usuário\n"
-						"4. Visualizar Todos os Usuários\n"
-						"0. Voltar\n"
+						"╔════════════════════════════════════╗\n"
+						"║ Gerenciamento de Usuários          ║\n"
+						"╠════════════════════════════════════╣\n"
+						"║ 1. Registrar Usuário               ║\n"
+						"║ 2. Atualizar Usuário               ║\n"
+						"║ 3. Excluir Usuário                 ║\n"
+						"║ 4. Visualizar Todos os Usuários    ║\n"
+						"║ 0. Voltar                          ║\n"
+						"╚════════════════════════════════════╝\n"
+						"\n"
 						"Digite a opção: "
 					);
 					scanf("%d", &opcaoUsuario);
@@ -1592,35 +1607,6 @@ void exibirTodosUsuarios(const Usuario usuarios[], int numeroDeUsuarios) {
 
 //função principal
 int main() {
-	//Inicializa todas as estruturas de dados
-	int contadorLivros;
-	inicializarLivros(livros, &contadorLivros);
-
-	int contadorUsuarios;
-	inicializarUsuarios(usuarios, &contadorUsuarios);
-	int contadorEmprestimos;
-	inicializarEmprestimos(emprestimos, &contadorEmprestimos);
-
-	int contadorReservas;
-	inicializarReservas(reservas, &contadorReservas);
-
-	FILE *usuariosArquivo = fopen(USUARIOS_ARQUIVO, "rb+");
-	if (usuariosArquivo == NULL)
-		usuariosArquivo = fopen(USUARIOS_ARQUIVO, "wb+");
-
-	FILE *livrosArquivo = fopen(LIVROS_ARQUIVO, "rb+");
-		if (livrosArquivo == NULL)
-			livrosArquivo = fopen(LIVROS_ARQUIVO, "wb+");
-
-	FILE *emprestimosArquivor = fopen(EMPRESTIMOS_ARQUIVO, "rb+");
-		if (emprestimosArquivo == NULL)
-			emprestimosArquivo = fopen(EMPRESTIMOS_ARQUIVO, "wb+");
-
-	FILE *reservasArquivo = fopen(RESERVAS_ARQUIVO, "rb+");
-		if (reservasArquivo == NULL)
-			reservasArquivo = fopen(RESERVAS_ARQUIVO, "wb+");
-
-
 	//exibir logo
 	exibirLogo();
 
@@ -1654,8 +1640,7 @@ int main() {
 			limparTela();
 
 			if (usuarioAtual->papel == ADMINISTRADOR) {
-				menuAdmin(usuarioAtual, livros, &contadorLivros, usuarios, &contadorUsuarios,
-					emprestimos, &contadorEmprestimos, reservas, &contadorReservas);
+				menuAdmin(usuarioAtual);
 			} else if (usuarioAtual->papel == BIBLIOTECARIO) {
 				menuBibliotecario(usuarioAtual, livros, &contadorLivros, usuarios, &contadorUsuarios,
 					emprestimos, &contadorEmprestimos, reservas, &contadorReservas);
