@@ -161,7 +161,7 @@ void exibirEmprestimosAtivos();
 void exibirEmprestimosUsuario(const char *idUsuario);
 
 // funções para reservas
-int fazerReserva(const char * idUsuario);
+int fazerReserva(const char *idUsuario);
 void visualizarReservas(const char *idUsuario);
 
 // funções para Relatórios
@@ -359,11 +359,11 @@ char *papelParaTexto(Papel papel)
 
 int adicionarLivro()
 {
-	Contadores contadores;
 	FILE *arquivoContadores = fopen(CONTADORES_ARQUIVO, "rb+");
 	if (arquivoContadores == NULL)
 		return 0;
 
+	Contadores contadores;
 	fread(&contadores, sizeof(Contadores), 1, arquivoContadores);
 
 	if (contadores.contadorLivros >= MAX_LIVROS)
@@ -419,7 +419,7 @@ int adicionarLivro()
 
 	FILE *arquivoLivros = fopen(LIVROS_ARQUIVO, "ab");
 	if (arquivoLivros == NULL)
-		fopen(LIVROS_ARQUIVO, "wb");
+		arquivoLivros = fopen(LIVROS_ARQUIVO, "wb");
 
 	fwrite(&novoLivro, sizeof(Livro), 1, arquivoLivros);
 	fclose(arquivoLivros);
@@ -541,7 +541,7 @@ int excluirLivro()
 	isbn[strcspn(isbn, "\n")] = 0;
 
 	Livro livro;
-	int indice encontrarLivroPorISBN(isbn, &livro);
+	int indice = encontrarLivroPorISBN(isbn, &livro);
 
 	if (indice == -1)
 	{
@@ -593,7 +593,7 @@ void exibirTodosLivros()
 
 	Contadores contadores;
 
-	if (fread(arquivoContadores, sizeof(Contadores), 1, &contadores))
+	if (fread(&contadores, sizeof(Contadores), 1, arquivoContadores))
 	{
 		printf("\nNão há livros na biblioteca.\n");
 		return;
@@ -801,7 +801,7 @@ int registrarUsuario(const Papel papel)
 	fgets(novoUsuario.id, TAM_ID, stdin);
 	novoUsuario.id[strcspn(novoUsuario.id, "\n")] = 0;
 
-	if (encontrarUsuarioPorId(novoUsuario.id) != -1)
+	if (encontrarUsuarioPorId(novoUsuario.id, &(Usuario usuario)) != -1)
 	{
 		printf("Erro: ID de usuário já existe!\n");
 		return 0;
@@ -857,7 +857,7 @@ void exibirUsuario(const Usuario *usuario)
 }
 
 // Função para encontrar usuário pelo ID
-int encontrarUsuarioPorId(char *id, Usuario *usuario)
+int encontrarUsuarioPorId(const char *id, Usuario *usuario)
 {
 	FILE *arquivo = fopen(USUARIOS_ARQUIVO, "rb");
 
@@ -963,14 +963,14 @@ int emprestarLivro()
 		limparBufferEntrada();
 		if (opcao == 1)
 		{
-			fazerReserva(reservas, contadorReservas, idUsuario, livros, contadorLivros);
+			fazerReserva(idUsuario);
 		}
 		return 0;
 	}
 
 	// Cria registro de empréstimo
 	Emprestimo novoEmprestimo;
-	novoEmprestimo.idEmprestimo = *contadorEmprestimos + 1;
+	novoEmprestimo.idEmprestimo = contadores.contadorEmprestimos + 1;
 	strcpy(novoEmprestimo.idUsuario, idUsuario);
 	strcpy(novoEmprestimo.isbn, isbn);
 	novoEmprestimo.dataEmprestimo = obterDataAtual();
@@ -1093,9 +1093,8 @@ int devolverLivro()
 	// Encontra empréstimo ativo
 	int emprestimoExiste = 0;
 	Emprestimo emprestimo;
-	for (int i = 0; i < contadores.contadorEmprestimos; i++)
+	while (fread(&emprestimo, sizeof(Emprestimo), 1, arquivoEmprestimos))
 	{
-		fread(&emprestimo, sizeof(Emprestimo), 1, arquivoEmprestimos);
 		if (emprestimo.estaAtivo && !emprestimo.foiDevolvido &&
 			strcmp(emprestimo.idUsuario, idUsuario) == 0 &&
 			strcmp(emprestimo.isbn, isbn) == 0)
@@ -1166,7 +1165,7 @@ int renovarLivro()
 		return 0;
 	}
 
-	Contador contadores;
+	Contadores contadores;
 	fread(&contadores, sizeof(Contadores), 1, arquivoContadores);
 	fclose(arquivoContadores);
 
@@ -1185,16 +1184,15 @@ int renovarLivro()
 	int emprestimoExiste = 0;
 	FILE *arquivoEmprestimos = fopen(EMPRESTIMOS_ARQUIVO, "rb+");
 
-	for (int i = 0; i < contadores.contadorEmprestimos; i++)
+	while (fread(&emprestimo, sizeof(Emprestimo), 1, arquivoEmprestimos))
 	{
-		if (fread(&emprestimo, sizeof(Emprestimo), 1, arquivoEmprestimos))
-			if (emprestimo.estaAtivo && !emprestimo.foiDevolvido &&
-				strcmp(emprestimo.idUsuario, idUsuario) == 0 &&
-				strcmp(emprestimo.isbn, isbn) == 0)
-			{
-				emprestimoExiste = 1;
-				break;
-			}
+		if (emprestimo.estaAtivo && !emprestimo.foiDevolvido &&
+			strcmp(emprestimo.idUsuario, idUsuario) == 0 &&
+			strcmp(emprestimo.isbn, isbn) == 0)
+		{
+			emprestimoExiste = 1;
+			break;
+		}
 	}
 
 	if (!emprestimoExiste)
@@ -1423,7 +1421,7 @@ int fazerReserva(const char *idUsuario)
 	}
 
 	Reserva reserva;
-	while(fread(&reserva, sizeof(Reserva), 1, arquivoReservas))
+	while (fread(&reserva, sizeof(Reserva), 1, arquivoReservas))
 	{
 		if (reserva.estaAtivo && !reserva.foiAtendida &&
 			strcmp(reserva.idUsuario, idUsuario) == 0 &&
@@ -1466,13 +1464,13 @@ void visualizarReservas(const char *idUsuario)
 	}
 
 	Reserva reserva;
-	while(fread(&reserva, sizeof(Reserva), 1, arquivoReservas))
+	while (fread(&reserva, sizeof(Reserva), 1, arquivoReservas))
 	{
 		if (reserva.estaAtivo && strcmp(reserva.idUsuario, idUsuario) == 0)
 		{
 			Livro livro;
 			int indiceLivro = encontrarLivroPorISBN(reserva.isbn, &livro);
-			
+
 			if (indiceLivro != -1)
 			{
 				printf("\nID da Reserva: %d\n", reserva.idReserva);
@@ -1480,7 +1478,7 @@ void visualizarReservas(const char *idUsuario)
 				printf("Data: %02d/%02d/%d\n", reserva.dataReserva.dia,
 					   reserva.dataReserva.mes, reserva.dataReserva.ano);
 				printf("Status: %s\n", reserva.foiAtendida ? "Atendida" : "Pendente");
-				encontrados ++;
+				encontrados++;
 			}
 		}
 	}
@@ -1590,7 +1588,7 @@ void gerarRelatorioLivrosDisponiveis()
 		{
 			printf("%-30s %-20s %d/%-9d %s\n", livro.titulo, livro.autor,
 				   livro.copiasDisponiveis, livro.totalCopias, livro.localizacao);
-			encontrados ++;
+			encontrados++;
 		}
 	}
 
@@ -1635,7 +1633,7 @@ void gerarRelatorioLivrosAtrasados()
 						   livro.titulo, emprestimo.idUsuario,
 						   emprestimo.dataVencimento.dia, emprestimo.dataVencimento.mes,
 						   emprestimo.dataVencimento.ano, diasAtraso);
-					encontrados ++;
+					encontrados++;
 				}
 			}
 		}
@@ -1731,6 +1729,14 @@ void gerarEstatisticasUso()
 		return;
 	}
 
+	FILE *arquivoContadores = fopen(CONTADORES_ARQUIVO, "rb");
+	if (arquivoContadores == NULL)
+		return 0;
+
+	Contadores contadores;
+	fread(&contadores, sizeof(Contadores), 1, arquivoContadores);
+	fclose(arquivoContadores);
+
 	int emprestimosAtivos = 0;
 	int emprestimosDevolvidos = 0;
 	int emprestimosAtrasados = 0;
@@ -1762,12 +1768,11 @@ void gerarEstatisticasUso()
 		"Empréstimos Devolvidos: %d\n"
 		"Empréstimos Atrasados: %d\n"
 		"Taxa de Devolução: %.2f%%\n",
-		contadorEmprestimos,
+		contadores.contadorEmprestimos,
 		emprestimosAtivos,
 		emprestimosDevolvidos,
 		emprestimosAtrasados,
-		contadorEmprestimos > 0 ? ((float)emprestimosDevolvidos / contadorEmprestimos * 100) : 0
-	);
+		contadorEmprestimos > 0 ? ((float)emprestimosDevolvidos / contadores.contadorEmprestimos * 100) : 0);
 }
 
 // SISTEMA DE MENU
@@ -1897,8 +1902,8 @@ void menuAdmin(Usuario *usuarioAtual)
 
 					registrarUsuario(usuarios, contadorUsuarios, papel);
 					break;
-				}.
-				case 2: /* atualizarUsuario(); */
+				}
+				.case 2: /* atualizarUsuario(); */
 					break;
 				case 3: /* excluirUsuario(); */
 					break;
