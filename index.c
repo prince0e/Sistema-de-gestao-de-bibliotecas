@@ -988,7 +988,7 @@ int emprestarLivro() {
 
 				fseek(arquivoReservas, sizeof(Reserva) * -1, SEEK_CUR);
 				fwrite(&reserva, sizeof(Reserva), 1, arquivoReservas);
-				
+
 				printf("Sua reserva para este livro foi atendida.\n");
 				break;
 			}
@@ -999,8 +999,13 @@ int emprestarLivro() {
 }
 
 //Função para devolver livro
-int devolverLivro(Emprestimo emprestimos[], int contadorEmprestimos, Livro livros[], int contadorLivros,
-	Usuario usuarios[], int contadorUsuarios) {
+int devolverLivro() {
+	FILE *arquivoEmprestimos = fopen(EMPRESTIMOS_ARQUIVO, "rb+");
+	if(arquivoEmprestimos == NULL) {
+		printf("Erro: Não foi possível abrir o arquivo de empréstimos!\n");
+		return 0;
+	}
+
 	printf("\n--- Devolver Livro ---\n");
 
 	char idUsuario[TAM_ID];
@@ -1014,49 +1019,64 @@ int devolverLivro(Emprestimo emprestimos[], int contadorEmprestimos, Livro livro
 	isbn[strcspn(isbn, "\n")] = 0;
 
 	// Encontra empréstimo ativo
-	int indiceEmprestimo = -1;
-	for (int i = 0; i < contadorEmprestimos; i++) {
-		if (emprestimos[i].estaAtivo && !emprestimos[i].foiDevolvido &&
-			strcmp(emprestimos[i].idUsuario, idUsuario) == 0 &&
-			strcmp(emprestimos[i].isbn, isbn) == 0) {
-			indiceEmprestimo = i;
+	int emprestimoExiste = 0;
+	Emprestimo emprestimo;
+	for (int i = 0; i < contadores.contadorEmprestimos; i++) {
+		fread(&emprestimo, sizeof(Emprestimo), 1, arquivoEmprestimos);
+		if (emprestimo.estaAtivo && !emprestimo.foiDevolvido &&
+			strcmp(emprestimo.idUsuario, idUsuario) == 0 &&
+			strcmp(emprestimo.isbn, isbn) == 0) {
+			emprestimoExiste = 1;
 			break;
 		}
 	}
 
-	if (indiceEmprestimo == -1) {
+	if (!emprestimoExiste) {
 		printf("Erro: Nenhum empréstimo ativo encontrado para este usuário e livro.\n");
 		return 0;
 	}
 
-	emprestimos[indiceEmprestimo].dataDevolucao = obterDataAtual();
-	emprestimos[indiceEmprestimo].foiDevolvido = 1;
+	emprestimo.dataDevolucao = obterDataAtual();
+	emprestimo.foiDevolvido = 1;
 
 	// Calcula multa se estiver atrasado
-	calcularMulta(&emprestimos[indiceEmprestimo]);
+	calcularMulta(&emprestimo);
 
 	// Atualiza disponibilidade do livro
-	int indiceLivro = encontrarLivroPorISBN(livros, contadorLivros, isbn);
-	if (indiceLivro != -1) livros[indiceLivro].copiasDisponiveis++;
+	Livro livro;
+	int indiceLivro = encontrarLivroPorISBN(isbn, &livro);
+	if (indiceLivro != -1) {
+		livro.copiasDisponiveis++;
+		FILE *arquivoLivros = fopen(LIVROS_ARQUIVO, "rb+");
+		fseek(arquivoLivros, sizeof(Livro) * indiceLivro, SEEK_SET);
+		fwrite(&livro, sizeof(Livro), 1, arquivoLivros);
+		fclose(arquivoLivros);
+	}
 
 	// Atualiza contador de empréstimos do usuário
-	int indiceUsuario = encontrarUsuarioPorId(usuarios, contadorUsuarios, idUsuario);
+	Usuario usuario;
+	int indiceUsuario = encontrarUsuarioPorId(idUsuario, &usuario);
+
 	if (indiceUsuario != -1) {
-		usuarios[indiceUsuario].contadorEmprestimos--;
-		if (emprestimos[indiceEmprestimo].valorMulta > 0) {
-			usuarios[indiceUsuario].multasTotais += emprestimos[indiceEmprestimo].valorMulta;
-		}
+		usuario.contadorEmprestimos--;
+		if (emprestimo.valorMulta > 0)
+			usuario.multasTotais += emprestimo.valorMulta;
+
+		FILE *arquivoUsuarios = fopen(USUARIOS_ARQUIVO, "rb+");
+		fseek(arquivoUsuarios, sizeof(Usuario) * indiceUsuario, SEEK_SET);
+		fwrite(&usuario, sizeof(Usuario), 1, arquivoUsuarios);
+		fclose(arquivoUsuarios);
 	}
 
 	printf("Livro devolvido com sucesso!\n");
-	if (emprestimos[indiceEmprestimo].valorMulta > 0) {
-		printf("Multa aplicada: R$%.2f\n", emprestimos[indiceEmprestimo].valorMulta);
+	if (emprestimo.valorMulta > 0) {
+		printf("Multa aplicada: R$%.2f\n", emprestimo.valorMulta);
 	}
 
 	return 1;
 }
 
-int renovarLivro(Emprestimo emprestimos[], int contadorEmprestimos, Livro livros[], int contadorLivros) {
+int renovarLivro() {
 	printf("\n--- Renovar Livro ---\n");
 
 	char idUsuario[TAM_ID];
@@ -1072,9 +1092,9 @@ int renovarLivro(Emprestimo emprestimos[], int contadorEmprestimos, Livro livros
 	// Encontra empréstimo ativo
 	int indiceEmprestimo = -1;
 	for (int i = 0; i < contadorEmprestimos; i++) {
-		if (emprestimos[i].estaAtivo && !emprestimos[i].foiDevolvido &&
-			strcmp(emprestimos[i].idUsuario, idUsuario) == 0 &&
-			strcmp(emprestimos[i].isbn, isbn) == 0) {
+		if (emprestimo.estaAtivo && !emprestimo.foiDevolvido &&
+			strcmp(emprestimo.idUsuario, idUsuario) == 0 &&
+			strcmp(emprestimo.isbn, isbn) == 0) {
 			indiceEmprestimo = i;
 			break;
 		}
@@ -1085,7 +1105,7 @@ int renovarLivro(Emprestimo emprestimos[], int contadorEmprestimos, Livro livros
 		return 0;
 	}
 
-	if (emprestimos[indiceEmprestimo].renovacoesUtilizadas >= MAX_RENOVACOES) {
+	if (emprestimo.renovacoesUtilizadas >= MAX_RENOVACOES) {
 		printf("Erro: Número máximo de renovações atingido para este livro!\n");
 		return 0;
 	}
