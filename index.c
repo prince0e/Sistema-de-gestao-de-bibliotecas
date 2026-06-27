@@ -435,99 +435,112 @@ int atualizarLivro(Livro livros[], int contador) {
 	isbn[strcspn(isbn, "\n")] = 0;
 
 	Livro livro;
-
-	if (!encontrarLivroPorISBN(isbn, &livro)) {
+	int indice = encontrarLivroPorISBN(isbn, &livro);
+	if (indice == -1) {
 		printf("Erro: Livro não encontrado!\n");
 		return 0;
 	}
 
 	printf("\nDetalhes Atuais do Livro:\n");
-	exibirLivro(&livros[indice]);
+	exibirLivro(&livro);
 
 	printf("\nDigite as novas informações (pressione Enter para manter o valor atual):\n");
 
 	char entrada[TAM_TITULO];
 
-//LER OS DETALHES DO LIVRO
+	//LER OS DETALHES DO LIVRO
 
 	//Ler o título
-	printf("Novo Título [%s]: ", livros[indice].titulo);
+	printf("Novo Título [%s]: ", livro.titulo);
 	fgets(entrada, TAM_TITULO, stdin);
 	if (strlen(entrada) > 1) {
 		entrada[strcspn(entrada, "\n")] = 0;
-		strcpy(livros[indice].titulo, entrada);
+		strcpy(livro.titulo, entrada);
 	}
 
 	//Ler o autor
-	printf("Novo Autor [%s]: ", livros[indice].autor);
+	printf("Novo Autor [%s]: ", livro.autor);
 	fgets(entrada, TAM_AUTOR, stdin);
 	if (strlen(entrada) > 1) {
 		entrada[strcspn(entrada, "\n")] = 0;
-		strcpy(livros[indice].autor, entrada);
+		strcpy(livro.autor, entrada);
 	}
 
 	//Ler a editora
-	printf("Nova Editora [%s]: ", livros[indice].editora);
+	printf("Nova Editora [%s]: ", livro.editora);
 	fgets(entrada, TAM_EDITORA, stdin);
 	if (strlen(entrada) > 1) {
 		entrada[strcspn(entrada, "\n")] = 0;
-		strcpy(livros[indice].editora, entrada);
+		strcpy(livro.editora, entrada);
 	}
 
 	//Ler a categoria
-	printf("Nova Categoria [%s]: ", livros[indice].categoria);
+	printf("Nova Categoria [%s]: ", livro.categoria);
 	fgets(entrada, TAM_CATEGORIA, stdin);
 	if (strlen(entrada) > 1) {
 		entrada[strcspn(entrada, "\n")] = 0;
-		strcpy(livros[indice].categoria, entrada);
+		strcpy(livro.categoria, entrada);
 	}
 
 	//Ler a Localização
-	printf("Nova Localização [%s]: ", livros[indice].localizacao);
+	printf("Nova Localização [%s]: ", livro.localizacao);
 	fgets(entrada, TAM_LOCALIZACAO, stdin);
 	if (strlen(entrada) > 1) {
 		entrada[strcspn(entrada, "\n")] = 0;
-		strcpy(livros[indice].localizacao, entrada);
+		strcpy(livro.localizacao, entrada);
 	}
 
 	//Ler o total de cópias
-	printf("Novo Total de Cópias [%d]: ", livros[indice].totalCopias);
+	printf("Novo Total de Cópias [%d]: ", livro.totalCopias);
 	fgets(entrada, 10, stdin);
 	if (strlen(entrada) > 1) {
 		int novoTotal = atoi(entrada);
-		if (novoTotal >= livros[indice].totalCopias - livros[indice].copiasDisponiveis) {
-			int emprestados = livros[indice].totalCopias - livros[indice].copiasDisponiveis;
-			livros[indice].totalCopias = novoTotal;
-			livros[indice].copiasDisponiveis = novoTotal - emprestados;
+		if (novoTotal >= livro.totalCopias - livro.copiasDisponiveis) {
+			int emprestados = livro.totalCopias - livro.copiasDisponiveis;
+			livro.totalCopias = novoTotal;
+			livro.copiasDisponiveis = novoTotal - emprestados;
 		} else {
 			printf("Erro: Não é possível reduzir as cópias abaixo da quantidade atualmente emprestada!\n");
 		}
 	}
 
+	FILE *arquivoLivros = fopen(LIVROS_ARQUIVO, "rb+");
+	fseek(arquivoLivros, sizeof(Livro) * indice, SEEK_SET);
+	fwrite(&livro, sizeof(Livro), 1, arquivoLivros);
+	fclose(arquivoLivros);
+
 	printf("Livro atualizado com sucesso!\n");
 	return 1;
 }
 
-int excluirLivro(Livro livros[], int contador) {
+int excluirLivro() {
 	char isbn[TAM_ISBN];
 	printf("\n--- Excluir Livro ---\n");
 	printf("Digite o ISBN do livro a ser excluído: ");
 	fgets(isbn, TAM_ISBN, stdin);
 	isbn[strcspn(isbn, "\n")] = 0;
 
-	int indice = encontrarLivroPorISBN(livros, contador, isbn);
+	Livro livro;
+	int indice encontrarLivroPorISBN(isbn, &livro);
+
 	if (indice == -1) {
 		printf("Erro: Livro não encontrado!\n");
 		return 0;
 	}
 
 	// Verifica se o livro está emprestado atualmente
-	if (livros[indice].copiasDisponiveis < livros[indice].totalCopias) {
+	if (livro.copiasDisponiveis < livro.totalCopias) {
 		printf("Erro: Não é possível excluir um livro que está emprestado!\n");
 		return 0;
 	}
 
-	livros[indice].estaAtivo = 0;
+	livro.estaAtivo = 0;
+
+	FILE *arquivoLivros = fopen(LIVROS_ARQUIVO, "rb+");	
+	fseek(arquivoLivros, sizeof(Livro) * indice, SEEK_SET);
+	fwrite(&livro, sizeof(Livro), 1, arquivoLivros);
+	fclose(arquivoLivros);
+
 	printf("Livro excluído com sucesso!\n");
 	return 1;
 }
@@ -543,8 +556,19 @@ void exibirLivro(const Livro *livro) {
 	printf("Localização: %s\n", livro->localizacao);
 }
 
-void exibirTodosLivros(const Livro livros[], int contador) {
-	if (contador == 0) {
+void exibirTodosLivros() {
+	FILE *arquivoLivros = fopen(LIVROS_ARQUIVO, "rb");
+	
+	FILE *arquivoContadores = fopen(CONTADORES_ARQUIVO, "rb");
+
+	if (arquivoContadores == NULL || arquivoLivros == NULL) {
+		printf("\nNão há livros na biblioteca.\n");
+		return;
+	}
+
+	Contadores contadores;
+
+	if(fread(arquivoContadores, sizeof(Contadores), 1, &contadores)) {
 		printf("\nNão há livros na biblioteca.\n");
 		return;
 	}
@@ -553,30 +577,42 @@ void exibirTodosLivros(const Livro livros[], int contador) {
 	printf("%-15s %-30s %-20s %-10s %s\n", "ISBN", "Título", "Autor", "Disponíveis", "Localização");
 	imprimirSeparador();
 
-	for (int i = 0; i < contador; i++) {
-		if (livros[i].estaAtivo) {
+	Livro livro;
+
+	for (int i = 0; i < contadores.totalLivros; i++) {
+		fread(arquivoLivros, sizeof(Livro), 1, &livro);
+	
+		if (livro.estaAtivo) {
 			printf("%-15s %-30s %-20s %d/%-9d %s\n",
-				livros[i].isbn, livros[i].titulo, livros[i].autor,
-				livros[i].copiasDisponiveis, livros[i].totalCopias, livros[i].localizacao);
+				livro.isbn,
+				livro.titulo,
+				livro.autor,
+				livro.copiasDisponiveis,
+				livro.totalCopias,
+				livro.localizacao
+			);
 		}
 	}
 }
 
 int encontrarLivroPorISBN(const char *isbn, Livro *livro) {
+	int indice = 0;
 	FILE *arquivoLivros = fopen(LIVROS_ARQUIVO, "rb");
 	if (arquivoLivros == NULL) {
-		return 0;
+		return -1;
 	}
 
 	while (fread(livro, sizeof(Livro), 1, arquivoLivros)) {
 		if (strcmp(livro->isbn, isbn) == 0) {
 			fclose(arquivoLivros);
-			return 1;
+			return indice;
 		}
+
+		indice ++;
 	}
 
 	fclose(arquivoLivros);
-	return 0;
+	return -1;
 }
 
 void pesquisarLivros() {
@@ -591,7 +627,7 @@ void pesquisarLivros() {
 		"║ 3. Pesquisar por ISBn              ║\n"
 		"║ 4. Pesquisar por Categoria         ║\n"
 		"╚════════════════════════════════════╝\n"
-		"/n"
+		"\n"
 		"Digite a opção: "
 		);
 	scanf("%d", &opcao);
@@ -694,8 +730,18 @@ void pesquisarLivros() {
 	if (!encontrados) printf("\n\nNenhum livro encontrado com os critérios de pesquisa.\n");
 }
 
-int registrarUsuario(FILE *usuarios, int *contador, const Papel papel) {
-	if (*contador >= MAX_USUARIOS) {
+int registrarUsuario(const Papel papel) {
+	FILE *arquivoContadores = fopen(CONTADORES_ARQUIVO, "rb");
+	
+	if(arquivoContadores == NULL) {
+		printf("Erro: Não foi possível abrir o arquivo de contadores!\n");
+		return 0;
+	}
+
+	Contador contadores;
+	fread(arquivoContadores, sizeof(Contadores), 1, &contadores)
+
+	if (contadores.contadorUsuarios >= MAX_USUARIOS) {
 		printf("Erro: Limite máximo de usuários atingido!\n");
 		return 0;
 	}
@@ -707,7 +753,7 @@ int registrarUsuario(FILE *usuarios, int *contador, const Papel papel) {
 	fgets(novoUsuario.id, TAM_ID, stdin);
 	novoUsuario.id[strcspn(novoUsuario.id, "\n")] = 0;
 
-	if (encontrarUsuarioPorId(usuarios, *contador, novoUsuario.id) != -1) {
+	if (encontrarUsuarioPorId(novoUsuario.id) != -1) {
 		printf("Erro: ID de usuário já existe!\n");
 		return 0;
 	}
@@ -729,8 +775,8 @@ int registrarUsuario(FILE *usuarios, int *contador, const Papel papel) {
 	novoUsuario.estaAtivo = 1;
 	novoUsuario.multasTotais = 0.0;
 
-	usuarios[*contador] = novoUsuario;
-	(*contador)++;
+	FILE *arquivoUsuarios = fopen(USUARIOS_ARQUIVO, "ab");
+	fwrite(arquivoUsuarios, sizeof(Usuario), 1, &novoUsuario);
 
 	printf("Usuário registrado com sucesso!\n");
 	return 1;
@@ -763,17 +809,21 @@ void exibirUsuario(const Usuario *usuario) {
 int encontrarUsuarioPorId(char *id, Usuario *usuario) {
     FILE *arquivo = fopen(USUARIOS_ARQUIVO, "rb");
 
-    if (arquivo == NULL) return 0;
+    if (arquivo == NULL) return -1;
+
+	int indice = 0;
 
     while (fread(usuario, sizeof(Usuario), 1, arquivo) == 1) {
         if (strcmp(usuario->id, id) == 0) {
             fclose(arquivo);
-            return 1;
+            return indice;
         }
+
+		indice ++;
     }
 
     fclose(arquivo);
-    return 0;
+    return -1;
 }
 
 int autenticarUsuario(Usuario *usuario) {
@@ -783,7 +833,7 @@ int autenticarUsuario(Usuario *usuario) {
 	fgets(idUsuario, TAM_ID, stdin);
 	idUsuario[strcspn(idUsuario, "\n")] = 0;
 
-	if (encontrarUsuarioPorId(idUsuario, usuario)) {
+	if (encontrarUsuarioPorId(idUsuario, usuario) != -1) {
 		printf("Bem-vindo, %s!\n", usuario->nome);
 		return 1;
 	}
@@ -792,15 +842,18 @@ int autenticarUsuario(Usuario *usuario) {
 	return 0;
 }
 
-//OPERAÇÕES DE EMPRÉSTIMO
+int emprestarLivro() {
+	FILE *arquivoContadores = fopen(CONTADORES_ARQUIVO, "rb");
+	
+	if(arquivoContadores == NULL) {
+		printf("Erro: Não foi possível abrir o arquivo de contadores!\n");
+		return 0;
+	}
 
-void inicializarEmprestimos(Emprestimo emprestimos[], int *contador) {
-	*contador = 0;
-}
+	Contador contadores;
+	fread(arquivoContadores, sizeof(Contadores), 1, &contadores);
 
-int emprestarLivro(Emprestimo emprestimos[], int *contadorEmprestimos, Livro livros[], int contadorLivros,
-	Usuario usuarios[], int contadorUsuarios, Reserva reservas[], int *contadorReservas) {
-	if (*contadorEmprestimos >= MAX_EMPRESTIMOS) {
+	if (contadores.contadorEmprestimos >= MAX_EMPRESTIMOS) {
 		printf("Erro: Limite máximo de empréstimos atingido!\n");
 		return 0;
 	}
