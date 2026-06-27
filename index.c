@@ -2082,7 +2082,7 @@ void menuLeitor(Usuario *usuarioAtual)
 			pausarTela();
 			break;
 		case 2:
-			exibirEmprestimosUsuario(emprestimos, contadorEmprestimos, usuarioAtual->id, livros, contadorLivros);
+			exibirEmprestimosUsuario(usuarioAtual->id);
 			pausarTela();
 			break;
 		case 3:
