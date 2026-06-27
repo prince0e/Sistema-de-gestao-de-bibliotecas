@@ -353,7 +353,14 @@ char* papelParaTexto(Papel papel) {
 //GERENCIAMENTO DE LIVROS
 
 int adicionarLivro() {
-	if (*contador >= MAX_LIVROS) {
+	Contadores contadores;
+	FILE *arquivoContadores = fopen(CONTADORES_ARQUIVO, "rb+");
+	if(arquivoContadores == NULL)
+		return 0;
+
+	fread(&contadores, sizeof(Contadores), 1, arquivoContadores);
+
+	if (contadores.contadorLivros >= MAX_LIVROS) {
 		printf("Erro: Limite máximo de livros atingido!\n");
 		return 0;
 	}
@@ -366,7 +373,7 @@ int adicionarLivro() {
 	novoLivro.isbn[strcspn(novoLivro.isbn, "\n")] = 0;
 
 	// Verifica ISBN duplicado
-	if (encontrarLivroPorISBN(livros, *contador, novoLivro.isbn) != -1) {
+	if (!encontrarLivroPorISBN(novoLivro.isbn, &novoLivro)) {
 		printf("Erro: Já existe um livro com este ISBN!\n");
 		return 0;
 	}
@@ -402,8 +409,19 @@ int adicionarLivro() {
 
 	novoLivro.estaAtivo = 1;
 
-	livros[*contador] = novoLivro;
-	(*contador)++;
+	FILE *arquivoLivros = fopen(LIVROS_ARQUIVO, "ab"); 
+	if(arquivoLivros == NULL)
+		fopen(LIVROS_ARQUIVO, "wb"); 
+
+	fwrite(&novoLivro, sizeof(Livro), 1, arquivoLivros);
+	fclose(arquivoLivros);
+
+	contadores.contadorLivros ++;
+
+	// Atualiza o arquivo de contadores
+	rewind(arquivoContadores);
+	fwrite(&contadores, sizeof(Contadores), 1, arquivoContadores);
+	fclose(arquivoContadores);
 
 	printf("Livro adicionado com sucesso!\n");
 	return 1;
@@ -416,8 +434,9 @@ int atualizarLivro(Livro livros[], int contador) {
 	fgets(isbn, TAM_ISBN, stdin);
 	isbn[strcspn(isbn, "\n")] = 0;
 
-	int indice = encontrarLivroPorISBN(livros, contador, isbn);
-	if (indice == -1) {
+	Livro livro;
+
+	if (!encontrarLivroPorISBN(isbn, &livro)) {
 		printf("Erro: Livro não encontrado!\n");
 		return 0;
 	}
@@ -543,13 +562,21 @@ void exibirTodosLivros(const Livro livros[], int contador) {
 	}
 }
 
-int encontrarLivroPorISBN(const Livro livros[], int contador, const char *isbn) {
-	for (int i = 0; i < contador; i++) {
-		if (livros[i].estaAtivo && strcmp(livros[i].isbn, isbn) == 0) {
-			return i;
+int encontrarLivroPorISBN(const char *isbn, Livro *livro) {
+	FILE *arquivoLivros = fopen(LIVROS_ARQUIVO, "rb");
+	if (arquivoLivros == NULL) {
+		return 0;
+	}
+
+	while (fread(livro, sizeof(Livro), 1, arquivoLivros)) {
+		if (strcmp(livro->isbn, isbn) == 0) {
+			fclose(arquivoLivros);
+			return 1;
 		}
 	}
-	return -1;
+
+	fclose(arquivoLivros);
+	return 0;
 }
 
 void pesquisarLivros(const Livro livros[], int contador) {
