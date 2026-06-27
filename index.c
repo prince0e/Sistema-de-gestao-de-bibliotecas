@@ -605,7 +605,7 @@ void exibirTodosLivros()
 
 	Livro livro;
 
-	for (int i = 0; i < contadores.totalLivros; i++)
+	for (int i = 0; i < contadores.contadorLivros; i++)
 	{
 		fread(arquivoLivros, sizeof(Livro), 1, &livro);
 
@@ -801,7 +801,8 @@ int registrarUsuario(const Papel papel)
 	fgets(novoUsuario.id, TAM_ID, stdin);
 	novoUsuario.id[strcspn(novoUsuario.id, "\n")] = 0;
 
-	if (encontrarUsuarioPorId(novoUsuario.id, &(Usuario usuario)) != -1)
+	Usuario tmp;
+	if (encontrarUsuarioPorId(novoUsuario.id, &tmp) != -1)
 	{
 		printf("Erro: ID de usuário já existe!\n");
 		return 0;
@@ -934,7 +935,7 @@ int emprestarLivro()
 		return 0;
 	}
 
-	if (usuarios[indiceUsuario].contadorEmprestimos >= MAX_EMPRESTIMOS_POR_USUARIO)
+	if (usuario.contadorEmprestimos >= MAX_EMPRESTIMOS_POR_USUARIO)
 	{
 		printf("Erro: Usuário atingiu o limite máximo de empréstimos (%d)!\n", MAX_EMPRESTIMOS_POR_USUARIO);
 		return 0;
@@ -1393,6 +1394,18 @@ void exibirEmprestimosUsuario(const char *idUsuario)
 
 int fazerReserva(const char *idUsuario)
 {
+	FILE *arquivoContadores = fopen(CONTADORES_ARQUIVO, "rb");
+
+	if (arquivoContadores == NULL)
+	{
+		printf("Erro: Não foi possível abrir o arquivo de contadores!\n");
+		return 0;
+	}
+
+	Contador contadores;
+	fread(&contadores, sizeof(Contadores), 1, arquivoContadores);
+	fclose(arquivoContadores);
+
 	char isbn[TAM_ISBN];
 	printf("Digite o ISBN do livro para reservar: ");
 	fgets(isbn, TAM_ISBN, stdin);
@@ -1434,7 +1447,7 @@ int fazerReserva(const char *idUsuario)
 	}
 
 	Reserva novaReserva;
-	novaReserva.idReserva = *contador + 1;
+	novaReserva.idReserva = contadores.contadorReservas + 1;
 	strcpy(novaReserva.idUsuario, idUsuario);
 	strcpy(novaReserva.isbn, isbn);
 	novaReserva.dataReserva = obterDataAtual();
@@ -1586,7 +1599,7 @@ void gerarRelatorioLivrosDisponiveis()
 	{
 		if (livro.estaAtivo && livro.copiasDisponiveis > 0)
 		{
-			printf("%-30s %-20s %d/%-9d %s\n", livro.titulo, livro.autor,
+			printf("%-30s %-20s %d/%-3d %s\n", livro.titulo, livro.autor,
 				   livro.copiasDisponiveis, livro.totalCopias, livro.localizacao);
 			encontrados++;
 		}
@@ -1731,7 +1744,7 @@ void gerarEstatisticasUso()
 
 	FILE *arquivoContadores = fopen(CONTADORES_ARQUIVO, "rb");
 	if (arquivoContadores == NULL)
-		return 0;
+		return;
 
 	Contadores contadores;
 	fread(&contadores, sizeof(Contadores), 1, arquivoContadores);
@@ -1772,7 +1785,7 @@ void gerarEstatisticasUso()
 		emprestimosAtivos,
 		emprestimosDevolvidos,
 		emprestimosAtrasados,
-		contadorEmprestimos > 0 ? ((float)emprestimosDevolvidos / contadores.contadorEmprestimos * 100) : 0);
+		contadores.contadorEmprestimos > 0 ? ((float)emprestimosDevolvidos / contadores.contadorEmprestimos * 100) : 0);
 }
 
 // SISTEMA DE MENU
@@ -1874,50 +1887,50 @@ void menuAdmin(Usuario *usuarioAtual)
 
 				switch (opcaoUsuario)
 				{
-				case 1:
-				{
-					printf(
-						"Escolha o papel:\n"
-						"\t1. Administrador"
-						"\t2. Bibliotecário"
-						"\t3. Leitor"
-						"\n");
-
-					short int papelEntrada;
-					scanf("%hd", &papelEntrada);
-
-					Papel papel;
-					switch (papelEntrada)
-					{
 					case 1:
-						papel = ADMINISTRADOR;
-						break;
-					case 2:
-						papel = BIBLIOTECARIO;
-						break;
-					case 3:
-						papel = LEITOR;
+					{
+						printf(
+							"Escolha o papel:\n"
+							"\t1. Administrador"
+							"\t2. Bibliotecário"
+							"\t3. Leitor"
+							"\n");
+
+						short int papelEntrada;
+						scanf("%hd", &papelEntrada);
+
+						Papel papel;
+						switch (papelEntrada)
+						{
+						case 1:
+							papel = ADMINISTRADOR;
+							break;
+						case 2:
+							papel = BIBLIOTECARIO;
+							break;
+						case 3:
+							papel = LEITOR;
+							break;
+						}
+
+						registrarUsuario(papel);
 						break;
 					}
-
-					registrarUsuario(usuarios, contadorUsuarios, papel);
-					break;
-				}
-				.case 2: /* atualizarUsuario(); */
-					break;
-				case 3: /* excluirUsuario(); */
-					break;
-				case 4:
-					exibirTodosUsuarios(usuarios, *contadorUsuarios);
-					pausarTela();
-					break;
+					case 2: /* atualizarUsuario(); */
+						break;
+					case 3: /* excluirUsuario(); */
+						break;
+					case 4:
+						exibirTodosUsuarios();
+						pausarTela();
+						break;
 				}
 			} while (opcaoUsuario != 0);
 			break;
 		}
 
 		case 3:
-			exibirEmprestimosAtivos(emprestimos, *contadorEmprestimos, livros, *contadorLivros);
+			exibirEmprestimosAtivos();
 			pausarTela();
 			break;
 
