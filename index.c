@@ -696,13 +696,20 @@ void exibirUsuario(const Usuario *usuario) {
 }
 
 //Função para encontrar usuário pelo ID
-int encontrarUsuarioPorId(const Usuario usuarios[], int contador, const char *id) {
-	for (int i = 0; i < contador; i++) {
-		if (usuarios[i].estaAtivo && strcmp(usuarios[i].id, id) == 0) {
-			return i;
-		}
-	}
-	return -1;
+int encontrarUsuarioPorId(char *id, Usuario *usuario) {
+    FILE *arquivo = fopen(USUARIOS_ARQUIVO, "rb");
+
+    if (arquivo == NULL) return 0;
+
+    while (fread(usuario, sizeof(Usuario), 1, arquivo) == 1) {
+        if (strcmp(usuario->id, id) == 0) {
+            fclose(arquivo);
+            return 1;
+        }
+    }
+
+    fclose(arquivo);
+    return 0;
 }
 
 Usuario* autenticarUsuario() {
