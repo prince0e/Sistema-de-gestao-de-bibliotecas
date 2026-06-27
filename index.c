@@ -1581,53 +1581,75 @@ void gerarRelatorioMaisEmprestados()
 	}
 }
 
-void gerarRelatorioLivrosDisponiveis(const Livro livros[], int contador)
+void gerarRelatorioLivrosDisponiveis()
 {
 	printf("\n=== RELATÓRIO DE LIVROS DISPONÍVEIS ===\n");
+
+	FILE *arquivoLivros = fopen(LIVROS_ARQUIVO, "rb");
+	if (arquivoLivros == NULL)
+	{
+		printf("Erro: Não foi possível abrir o arquivo de livros!\n");
+		return;
+	}
+
 	int encontrados = 0;
 
 	printf("%-30s %-20s %-10s %s\n", "Título", "Autor", "Disponíveis", "Localização");
 	imprimirSeparador();
 
-	for (int i = 0; i < contador; i++)
+	Livro livro;
+	while (fread(&livro, sizeof(Livro), 1, arquivoLivros))
 	{
-		if (livros[i].estaAtivo && livros[i].copiasDisponiveis > 0)
+		if (livro.estaAtivo && livro.copiasDisponiveis > 0)
 		{
-			printf("%-30s %-20s %d/%-9d %s\n", livros[i].titulo, livros[i].autor,
-				   livros[i].copiasDisponiveis, livros[i].totalCopias, livros[i].localizacao);
-			encontrados = 1;
+			printf("%-30s %-20s %d/%-9d %s\n", livro.titulo, livro.autor,
+				   livro.copiasDisponiveis, livro.totalCopias, livro.localizacao);
+			encontrados ++;
 		}
 	}
 
 	if (!encontrados)
 		printf("Nenhum livro disponível.\n");
+	else
+		printf("\nTotal de Livros Disponíveis: %d\n", encontrados);
+
+	fclose(arquivoLivros);
 }
 
-void gerarRelatorioLivrosAtrasados(const Emprestimo emprestimos[], int contadorEmprestimos,
-								   const Livro livros[], int contadorLivros)
+void gerarRelatorioLivrosAtrasados()
 {
 	printf("\n=== RELATÓRIO DE LIVROS ATRASADOS ===\n");
+
+	FILE *arquivoEmprestimos = fopen(EMPRESTIMOS_ARQUIVO, "rb");
+	if (arquivoEmprestimos == NULL)
+	{
+		printf("Erro: Não foi possível abrir o arquivo de empréstimos!\n");
+		return;
+	}
+
 	Data hoje = obterDataAtual();
 	int encontrados = 0;
 
 	printf("%-30s %-20s %-15s %s\n", "Título", "Usuário", "Vencimento", "Dias Atraso");
 	imprimirSeparador();
 
-	for (int i = 0; i < contadorEmprestimos; i++)
+	Emprestimo emprestimo;
+	while (fread(&emprestimo, sizeof(Emprestimo), 1, arquivoEmprestimos))
 	{
-		if (emprestimos[i].estaAtivo && !emprestimos[i].foiDevolvido)
+		if (emprestimo.estaAtivo && !emprestimo.foiDevolvido)
 		{
-			int diasAtraso = diasEntre(emprestimos[i].dataVencimento, hoje);
+			int diasAtraso = diasEntre(emprestimo.dataVencimento, hoje);
 			if (diasAtraso > 0)
 			{
-				int indiceLivro = encontrarLivroPorISBN(livros, contadorLivros, emprestimos[i].isbn);
+				Livro livro;
+				int indiceLivro = encontrarLivroPorISBN(emprestimo.isbn, &livro);
 				if (indiceLivro != -1)
 				{
 					printf("%-30s %-20s %02d/%02d/%d %13d\n",
-						   livros[indiceLivro].titulo, emprestimos[i].idUsuario,
-						   emprestimos[i].dataVencimento.dia, emprestimos[i].dataVencimento.mes,
-						   emprestimos[i].dataVencimento.ano, diasAtraso);
-					encontrados = 1;
+						   livro.titulo, emprestimo.idUsuario,
+						   emprestimo.dataVencimento.dia, emprestimo.dataVencimento.mes,
+						   emprestimo.dataVencimento.ano, diasAtraso);
+					encontrados ++;
 				}
 			}
 		}
@@ -1635,6 +1657,8 @@ void gerarRelatorioLivrosAtrasados(const Emprestimo emprestimos[], int contadorE
 
 	if (!encontrados)
 		printf("Nenhum livro atrasado.\n");
+	else
+		printf("\nTotal de Livros Atrasados: %d\n", encontrados);
 }
 
 void gerarRelatorioMultas(const Emprestimo emprestimos[], int contadorEmprestimos, const Usuario usuarios[], int contadorUsuarios)
