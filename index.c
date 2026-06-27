@@ -607,7 +607,7 @@ void exibirTodosLivros()
 
 	for (int i = 0; i < contadores.contadorLivros; i++)
 	{
-		fread(arquivoLivros, sizeof(Livro), 1, &livro);
+		fread(&livro, sizeof(Livro), 1, arquivoLivros);
 
 		if (livro.estaAtivo)
 		{
@@ -785,7 +785,7 @@ int registrarUsuario(const Papel papel)
 		return 0;
 	}
 
-	Contador contadores;
+	Contadores contadores;
 	fread(&contadores, sizeof(Contadores), 1, arquivoContadores);
 
 	if (contadores.contadorUsuarios >= MAX_USUARIOS)
@@ -910,7 +910,7 @@ int emprestarLivro()
 		return 0;
 	}
 
-	Contador contadores;
+	Contadores contadores;
 	fread(&contadores, sizeof(Contadores), 1, arquivoContadores);
 
 	if (contadores.contadorEmprestimos >= MAX_EMPRESTIMOS)
@@ -1402,7 +1402,7 @@ int fazerReserva(const char *idUsuario)
 		return 0;
 	}
 
-	Contador contadores;
+	Contadores contadores;
 	fread(&contadores, sizeof(Contadores), 1, arquivoContadores);
 	fclose(arquivoContadores);
 
@@ -1955,23 +1955,23 @@ void menuAdmin(Usuario *usuarioAtual)
 				switch (opcaoRelatorio)
 				{
 				case 1:
-					gerarRelatorioMaisEmprestados(emprestimos, *contadorEmprestimos, livros, *contadorLivros);
+					gerarRelatorioMaisEmprestados();
 					pausarTela();
 					break;
 				case 2:
-					gerarRelatorioLivrosDisponiveis(livros, *contadorLivros);
+					gerarRelatorioLivrosDisponiveis();
 					pausarTela();
 					break;
 				case 3:
-					gerarRelatorioLivrosAtrasados(emprestimos, *contadorEmprestimos, livros, *contadorLivros);
+					gerarRelatorioLivrosAtrasados();
 					pausarTela();
 					break;
 				case 4:
-					gerarRelatorioMultas(emprestimos, *contadorEmprestimos, usuarios, *contadorUsuarios);
+					gerarRelatorioMultas();
 					pausarTela();
 					break;
 				case 5:
-					gerarEstatisticasUso(emprestimos, *contadorEmprestimos);
+					gerarEstatisticasUso();
 					pausarTela();
 					break;
 				}
