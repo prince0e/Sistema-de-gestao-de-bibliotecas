@@ -779,14 +779,11 @@ int registrarUsuario(const Papel papel)
 {
 	FILE *arquivoContadores = fopen(CONTADORES_ARQUIVO, "rb");
 
-	if (arquivoContadores == NULL)
-	{
-		printf("Erro: Não foi possível abrir o arquivo de contadores!\n");
-		return 0;
-	}
-
 	Contadores contadores;
-	fread(&contadores, sizeof(Contadores), 1, arquivoContadores);
+	if (arquivoContadores == NULL)
+		contadores = {0, 0, 0, 0};
+	else 
+		fread(&contadores, sizeof(Contadores), 1, arquivoContadores);
 
 	if (contadores.contadorUsuarios >= MAX_USUARIOS)
 	{
