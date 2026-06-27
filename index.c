@@ -179,6 +179,7 @@ void imprimirSeparador();
 void pausarTela();
 void exibirLogo();
 void limparTela();
+void papelParaTexto(Papel papel);
 
 // Funções de menu
 void menuAdmin(Usuario *usuarioAtual, Livro livros[], int *contadorLivros, Usuario usuarios[], int *contadorUsuarios,
@@ -326,6 +327,19 @@ void limparTela() {
 
 	//Exibe a logo apôs limpar a tela
 	exibirLogo();
+}
+
+char* papelParaTexto(Papel papel) {
+	switch (papel) {
+		case ADMINISTRADOR:
+			return "administrador";
+		case BIBLIOTECARIO:
+			return "bibliotecário";
+		case LEITOR:
+			return "leitor";
+		default:
+			return "desconhecido";
+	}
 }
 
 //GERENCIAMENTO DE LIVROS
@@ -712,21 +726,20 @@ int encontrarUsuarioPorId(char *id, Usuario *usuario) {
     return 0;
 }
 
-Usuario* autenticarUsuario() {
+int autenticarUsuario(Usuario *usuario) {
 	char idUsuario[TAM_ID];
 	printf("\n--- Login no Sistema da Biblioteca ---\n");
 	printf("Digite o ID do Usuário: ");
 	fgets(idUsuario, TAM_ID, stdin);
 	idUsuario[strcspn(idUsuario, "\n")] = 0;
 
-	int indice = encontrarUsuarioPorId(idUsuario);
-	if (indice != -1) {
-		printf("Bem-vindo, %s!\n", usuarios[indice].nome);
-		return &usuarios[indice];
+	if (encontrarUsuarioPorId(idUsuario, usuario)) {
+		printf("Bem-vindo, %s!\n", usuario->nome);
+		return 1;
 	}
 
 	printf("Erro: Usuário não encontrado!\n");
-	return NULL;
+	return 0;
 }
 
 //OPERAÇÕES DE EMPRÉSTIMO
@@ -1337,18 +1350,18 @@ void menuAdmin(Usuario *usuarioAtual, Livro livros[], int *contadorLivros, Usuar
 		printf(
 			"\n"
 			"╔════════════════════════════════════╗\n"
-			"║ MENU DO ADMINISTRADOR         ║\n"
+			"║ MENU DO ADMINISTRADOR              ║\n"
 			"╠════════════════════════════════════╣\n"
-			"║ 1. Gerenciar Livros               ║\n"
-			"║ 2. Gerenciar Usuários             ║\n"
-			"║ 3. Visualizar Todos os Empréstimos║\n"
-			"║ 4. Gerar Relatórios               ║\n"
-			"║ 5. Visualizar Configurações       ║\n"
-			"║ 0. Sair                           ║\n"
+			"║ 1. Gerenciar Livros                ║\n"
+			"║ 2. Gerenciar Usuários              ║\n"
+			"║ 3. Visualizar Todos os Empréstimos ║\n"
+			"║ 4. Gerar Relatórios                ║\n"
+			"║ 5. Visualizar Configurações        ║\n"
+			"║ 0. Sair                            ║\n"
 			"╚════════════════════════════════════╝\n"
+			"/n"
+			"Digite a opção: "
 		);
-
-		printf("Digite a opção: ");
 		scanf("%d", &opcao);
 
 		limparBufferEntrada();
@@ -1489,9 +1502,9 @@ void menuBibliotecario(Usuario *usuarioAtual, Livro livros[], int *contadorLivro
 	do {
 		printf(
 			"\n"
-			"╔════════════════════════════════════╗\n"
+			"╔═════════════════════════════════════╗\n"
 			"║ MENU DO BIBLIOTECÁRIO               ║\n"
-			"╠════════════════════════════════════╣\n"
+			"╠═════════════════════════════════════╣\n"
 			"║ 1. Emprestar Livro                  ║\n"
 			"║ 2. Devolver Livro                   ║\n"
 			"║ 3. Renovar Livro                    ║\n"
@@ -1499,7 +1512,7 @@ void menuBibliotecario(Usuario *usuarioAtual, Livro livros[], int *contadorLivro
 			"║ 5. Pesquisar Livros                 ║\n"
 			"║ 6. Visualizar Livros Atrasados      ║\n"
 			"║ 0. Sair                             ║\n"
-			"╚════════════════════════════════════╝\n"
+			"╚═════════════════════════════════════╝\n"
 			"Digite a opção: "
 		);
 		scanf("%d", &opcao);
@@ -1526,16 +1539,16 @@ void menuLeitor(Usuario *usuarioAtual, Livro livros[], int contadorLivros, Empre
 		printf(
 			"\n"
 			"╔════════════════════════════════════╗\n"
-			"║     MENU DO LEITOR                ║\n"
+			"║     MENU DO LEITOR                 ║\n"
 			"╠════════════════════════════════════╣\n"
 			"║ Bem-vindo, %-20s ║\n"
 			"╠════════════════════════════════════╣\n"
-			"║ 1. Pesquisar Livros               ║\n"
-			"║ 2. Visualizar Meus Empréstimos    ║\n"
-			"║ 3. Reservar Livro                 ║\n"
-			"║ 4. Visualizar Minhas Reservas     ║\n"
-			"║ 5. Visualizar Minhas Multas       ║\n"
-			"║ 0. Sair                           ║\n"
+			"║ 1. Pesquisar Livros                ║\n"
+			"║ 2. Visualizar Meus Empréstimos     ║\n"
+			"║ 3. Reservar Livro                  ║\n"
+			"║ 4. Visualizar Minhas Reservas      ║\n"
+			"║ 5. Visualizar Minhas Multas        ║\n"
+			"║ 0. Sair                            ║\n"
 			"╚════════════════════════════════════╝"
 			"\n"
 			, usuarioAtual->nome);
@@ -1570,17 +1583,7 @@ void exibirTodosUsuarios(const Usuario usuarios[], int numeroDeUsuarios) {
 		if (usuarios[i].estaAtivo) {
 			printf("%-10s %-20s ", usuarios[i].id, usuarios[i].nome);
 
-			switch (usuarios[i].papel) {
-		case ADMINISTRADOR:
-			printf("administrador");
-			break;
-		case BIBLIOTECARIO:
-			printf("bibliotecário");
-			break;
-		case LEITOR:
-			printf("leitor");
-			break;
-			}
+			printf("%s", papelParaTexto(usuarios[i].papel));
 
 			printf(" %d\n", usuarios[i].contadorEmprestimos);
 		}
@@ -1645,9 +1648,9 @@ int main() {
 
 		fclose(usuariosArquivo);
 
-		usuarioAtual = autenticarUsuario();
+		int autenticado = autenticarUsuario(usuarioAtual);
 
-		if (usuarioAtual != NULL) {
+		if (autenticado) {
 			limparTela();
 
 			if (usuarioAtual->papel == ADMINISTRADOR) {
