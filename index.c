@@ -1664,6 +1664,22 @@ void gerarRelatorioLivrosAtrasados()
 void gerarRelatorioMultas(const Emprestimo emprestimos[], int contadorEmprestimos, const Usuario usuarios[], int contadorUsuarios)
 {
 	printf("\n=== RELATÓRIO DE MULTAS ===\n");
+
+	FILE *arquivoUsuarios = fopen(USUARIOS_ARQUIVO, "rb");
+	if (arquivoUsuarios == NULL)
+	{
+		printf("Erro: Não foi possível abrir o arquivo de usuários!\n");
+		return;
+	}
+
+	FILE *arquivoEmprestimos = fopen(EMPRESTIMOS_ARQUIVO, "rb");
+	if (arquivoEmprestimos == NULL)
+	{
+		printf("Erro: Não foi possível abrir o arquivo de empréstimos!\n");
+		fclose(arquivoUsuarios);
+		return;
+	}
+
 	float totalMultas = 0.0;
 	int encontrados = 0;
 
@@ -1673,19 +1689,21 @@ void gerarRelatorioMultas(const Emprestimo emprestimos[], int contadorEmprestimo
 	printf("%-20s %-30s %-15s %s\n", "ID do Usuário", "Nome", "Pendente", "Multas Totais");
 	imprimirSeparador();
 
-	for (int i = 0; i < contadorUsuarios; i++)
+	Usuario usuario;
+	while (fread(&usuario, sizeof(Usuario), 1, arquivoUsuarios) == 1)
 	{
-		if (usuarios[i].estaAtivo)
+		if (usuario.estaAtivo)
 		{
-			float multaUsuario = usuarios[i].multasTotais;
+			float multaUsuario = usuario.multasTotais;
 
 			// Adiciona multas de empréstimos atuais em atraso
-			for (int j = 0; j < contadorEmprestimos; j++)
+			Emprestimo emprestimo;
+			while (fread(&emprestimo, sizeof(Emprestimo), 1, arquivoEmprestimos))
 			{
-				if (emprestimos[j].estaAtivo && !emprestimos[j].foiDevolvido &&
-					strcmp(emprestimos[j].idUsuario, usuarios[i].id) == 0)
+				if (emprestimo.estaAtivo && !emprestimo.foiDevolvido &&
+					strcmp(emprestimo.idUsuario, usuario.id) == 0)
 				{
-					int diasAtraso = diasEntre(emprestimos[j].dataVencimento, hoje);
+					int diasAtraso = diasEntre(emprestimo.dataVencimento, hoje);
 					if (diasAtraso > 0)
 					{
 						multaUsuario += diasAtraso * MULTA_POR_DIA;
@@ -1693,10 +1711,13 @@ void gerarRelatorioMultas(const Emprestimo emprestimos[], int contadorEmprestimo
 				}
 			}
 
+			// Reinicia o arquivo de empréstimos para o próximo usuário
+			fseek(arquivoEmprestimos, 0, SEEK_SET);
+
 			if (multaUsuario > 0)
 			{
 				printf("%-20s %-30s R$%-14.2f R$%.2f\n",
-					   usuarios[i].id, usuarios[i].nome, multaUsuario, usuarios[i].multasTotais);
+					   usuario.id, usuario.nome, multaUsuario, usuario.multasTotais);
 				totalMultas += multaUsuario;
 				encontrados = 1;
 			}
@@ -1709,7 +1730,7 @@ void gerarRelatorioMultas(const Emprestimo emprestimos[], int contadorEmprestimo
 	}
 	else
 	{
-		printf("\nTotal de Multas Pendentes: R$%.2f\n", totalMultas);
+		printf("\nTotal de Multas Pendentes: %.2fMZN\n", totalMultas);
 	}
 }
 
