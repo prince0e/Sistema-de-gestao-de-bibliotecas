@@ -579,16 +579,20 @@ int encontrarLivroPorISBN(const char *isbn, Livro *livro) {
 	return 0;
 }
 
-void pesquisarLivros(const Livro livros[], int contador) {
+void pesquisarLivros() {
 	int opcao;
 	printf(
 		"\n"
-"--- Pesquisar Livros ---\n"
-"1. Pesquisar por Título\n"
-"2. Pesquisar por Autor\n"
-"3. Pesquisar por ISBn\n"
-"4. Pesquisar por Categoria\n"
-"Digite a opção: "
+		"╔════════════════════════════════════╗\n"
+		"║ Pesquisar Livros                   ║\n"
+		"╠════════════════════════════════════╣\n"
+		"║ 1. Pesquisar por Título            ║\n"
+		"║ 2. Pesquisar por Autor             ║\n"
+		"║ 3. Pesquisar por ISBn              ║\n"
+		"║ 4. Pesquisar por Categoria         ║\n"
+		"╚════════════════════════════════════╝\n"
+		"/n"
+		"Digite a opção: "
 		);
 	scanf("%d", &opcao);
 	limparBufferEntrada();
@@ -596,87 +600,98 @@ void pesquisarLivros(const Livro livros[], int contador) {
 	char termoBusca[TAM_TITULO];
 	int encontrados = 0;
 
+	Livro livro;
+	FILE *arquivoLivros = fopen(LIVROS_ARQUIVO, "rb");
+
 	switch(opcao) {
 		case 1:
-		printf("Digite o título para pesquisar: ");
-		fgets(termoBusca, TAM_TITULO, stdin);
-		termoBusca[strcspn(termoBusca, "\n")] = 0;
-		paraMinusculas(termoBusca);
+			printf("\n\nDigite o título para pesquisar: ");
+			fgets(termoBusca, TAM_TITULO, stdin);
+			termoBusca[strcspn(termoBusca, "\n")] = 0;
+			paraMinusculas(termoBusca);
 
-		printf("\nResultados da Pesquisa:\n");
-		for (int i = 0; i < contador; i++) {
-			if (livros[i].estaAtivo) {
-				char tituloCopia[TAM_TITULO];
-				strcpy(tituloCopia, livros[i].titulo);
-				paraMinusculas(tituloCopia);
-				if (strstr(tituloCopia, termoBusca) != NULL) {
-					exibirLivro(&livros[i]);
-					encontrados = 1;
+			limparTela();
+
+			printf("Resultados da Pesquisa:\n");
+			while (fread(&livro, sizeof(Livro), 1, arquivoLivros)) {
+				if (livro.estaAtivo) {
+					char tituloCopia[TAM_TITULO];
+					strcpy(tituloCopia, livro.titulo);
+					paraMinusculas(tituloCopia);
+					if (strstr(tituloCopia, termoBusca) != NULL) {
+						exibirLivro(&livro);
+						encontrados = 1;
+					}
 				}
 			}
-		}
-		break;
+			break;
 
 		case 2:
-		printf("Digite o autor para pesquisar: ");
-		fgets(termoBusca, TAM_TITULO, stdin);
-		termoBusca[strcspn(termoBusca, "\n")] = 0;
-		paraMinusculas(termoBusca);
+			printf("\n\nDigite o autor para pesquisar: ");
+			fgets(termoBusca, TAM_TITULO, stdin);
+			termoBusca[strcspn(termoBusca, "\n")] = 0;
+			paraMinusculas(termoBusca);
 
-		printf("\nResultados da Pesquisa:\n");
-		for (int i = 0; i < contador; i++) {
-			if (livros[i].estaAtivo) {
-				char autorCopia[TAM_AUTOR];
-				strcpy(autorCopia, livros[i].autor);
-				paraMinusculas(autorCopia);
-				if (strstr(autorCopia, termoBusca) != NULL) {
-					exibirLivro(&livros[i]);
-					encontrados = 1;
+			limparTela();
+
+			printf("Resultados da Pesquisa:\n");
+			while (fread(&livro, sizeof(Livro), 1, arquivoLivros)) {
+				if (livro.estaAtivo) {
+					char autorCopia[TAM_AUTOR];
+					strcpy(autorCopia, livro.autor);
+					paraMinusculas(autorCopia);
+					if (strstr(autorCopia, termoBusca) != NULL) {
+						exibirLivro(&livro);
+						encontrados = 1;
+					}
 				}
 			}
-		}
-		break;
+			break;
 
 		case 3:
-		printf("Digite o ISBN: ");
-		fgets(termoBusca, TAM_TITULO, stdin);
-		termoBusca[strcspn(termoBusca, "\n")] = 0;
+			printf("\n\nDigite o ISBN: ");
+			fgets(termoBusca, TAM_TITULO, stdin);
+			termoBusca[strcspn(termoBusca, "\n")] = 0;
 
-		printf("\nResultado da Pesquisa:\n");
-		for (int i = 0; i < contador; i++) {
-			if (livros[i].estaAtivo && strcmp(livros[i].isbn, termoBusca) == 0) {
-				exibirLivro(&livros[i]);
-				encontrados = 1;
-				break;
-			}
-		}
-		break;
+			limparTela();
 
-		case 4:
-		printf("Digite a categoria para filtrar: ");
-		fgets(termoBusca, TAM_TITULO, stdin);
-		termoBusca[strcspn(termoBusca, "\n")] = 0;
-		paraMinusculas(termoBusca);
-
-		printf("\nLivros na categoria '%s':\n", termoBusca);
-		for (int i = 0; i < contador; i++) {
-			if (livros[i].estaAtivo) {
-				char catCopia[TAM_CATEGORIA];
-				strcpy(catCopia, livros[i].categoria);
-				paraMinusculas(catCopia);
-				if (strstr(catCopia, termoBusca) != NULL) {
-					exibirLivro(&livros[i]);
+			printf("Resultado da Pesquisa:\n");
+			while (fread(&livro, sizeof(Livro), 1, arquivoLivros)) {
+				if (livro.estaAtivo && strcmp(livro.isbn, termoBusca) == 0) {
+					exibirLivro(&livro);
 					encontrados = 1;
+					break;
 				}
 			}
-		}
-		break;
+			break;
 
-		default: printf("Opção inválida!\n");
+		case 4:
+			printf("\n\nDigite a categoria para filtrar: ");
+			fgets(termoBusca, TAM_TITULO, stdin);
+			termoBusca[strcspn(termoBusca, "\n")] = 0;
+			paraMinusculas(termoBusca);
+
+			limparTela();
+
+			printf("Livros na categoria '%s':\n", termoBusca);
+			while (fread(&livro, sizeof(Livro), 1, arquivoLivros)) {
+				if (livro.estaAtivo) {
+					char catCopia[TAM_CATEGORIA];
+					strcpy(catCopia, livro.categoria);
+					paraMinusculas(catCopia);
+					if (strstr(catCopia, termoBusca) != NULL) {
+						exibirLivro(&livro);
+						encontrados = 1;
+					}
+				}
+			}
+			break;
+
+		default: printf("\n\nOpção inválida!\n");
 		return;
 	}
 
-	if (!encontrados) printf("Nenhum livro encontrado com os critérios de pesquisa.\n");
+	if (!encontrados) printf("\n\nNenhum livro encontrado com os critérios de pesquisa.\n");
 }
 
 int registrarUsuario(FILE *usuarios, int *contador, const Papel papel) {
