@@ -9,7 +9,9 @@
 #include <time.h>	//biblioteca para funções de manipulação de data e hora
 
 // CONSTANTES
-#define TAM_ISBN 30
+
+//Tamanhos de vetores
+#define TAM_ISBN 14
 #define TAM_TITULO 100
 #define TAM_AUTOR 100
 #define TAM_EDITORA 50
@@ -20,6 +22,7 @@
 #define TAM_EMAIL 50
 #define TAM_TELEFONE 9
 
+//Quantidades máximas
 #define MAX_LIVROS 1000
 #define MAX_USUARIOS 500
 #define MAX_EMPRESTIMOS 1000
@@ -29,16 +32,19 @@
 #define MAX_RENOVACOES 2
 #define MAX_EMPRESTIMOS_POR_USUARIO 5
 
+//Cores
 #define COR_AMARELO "\033[33m"
 #define COR_VERDE "\033[32m"
 #define COR_RESET "\033[0m"
 
+//Arquivos
 #define USUARIOS_ARQUIVO "usuarios.bin"
 #define LIVROS_ARQUIVO "livros.bin"
 #define EMPRESTIMOS_ARQUIVO "emprestimos.bin"
 #define RESERVAS_ARQUIVO "reservas.bin"
 #define CONTADORES_ARQUIVO "contadores.bin"
 
+//Estrutura para data
 typedef struct
 {
 	int dia, mes, ano;
@@ -59,6 +65,7 @@ typedef struct
 	int estaAtivo;
 } Livro;
 
+//Enumerador para definir papel de um usuário
 typedef enum
 {
 	ADMINISTRADOR,
@@ -111,6 +118,8 @@ typedef struct
 } Contadores;
 
 // Protótipos de funções
+
+//Funções para livros
 int adicionarLivro();
 int atualizarLivro();
 int excluirLivro();
@@ -118,6 +127,8 @@ void exibirLivro(const Livro *livro);
 void exibirTodosLivros();
 int encontrarLivroPorISBN(const char *isbn, Livro *livro);
 void pesquisarLivros();
+
+//Funções para usuário
 int registrarUsuario(const Papel papel);
 void exibirUsuario(const Usuario *usuario);
 void exibirTodosUsuarios();
@@ -131,11 +142,15 @@ void exibirEmprestimosAtivos();
 void exibirEmprestimosUsuario(const char *idUsuario);
 int fazerReserva(const char *idUsuario);
 void visualizarReservas(const char *idUsuario);
+
+//Funções para gerar relatorios
 void gerarRelatorioMaisEmprestados();
 void gerarRelatorioLivrosDisponiveis();
 void gerarRelatorioLivrosAtrasados();
 void gerarRelatorioMultas();
 void gerarEstatisticasUso();
+
+//Funções utilitárias
 Data obterDataAtual();
 int diasEntre(Data d1, Data d2);
 int compararDatas(Data d1, Data d2);
@@ -146,6 +161,8 @@ void pausarTela();
 void exibirLogo();
 void limparTela();
 char *papelParaTexto(Papel papel);
+
+//Menus
 void menuAdmin(Usuario *usuarioAtual);
 void menuBibliotecario(Usuario *usuarioAtual);
 void menuLeitor(Usuario *usuarioAtual);
@@ -154,7 +171,7 @@ void menuLeitor(Usuario *usuarioAtual);
 // FUNÇÕES UTILITÁRIAS
 Data obterDataAtual()
 {
-	Data hoje;			   // Obter a data atual do sistema
+	Data hoje;// Obter a data atual do sistema
 	time_t t = time(NULL); // Obter o tempo atual
 	struct tm *tm_info = localtime(&t);
 	hoje.dia = tm_info->tm_mday;
@@ -181,8 +198,10 @@ int compararDatas(Data d1, Data d2)
 {
 	if (d1.ano != d2.ano)
 		return d1.ano - d2.ano;
+
 	if (d1.mes != d2.mes)
 		return d1.mes - d2.mes;
+
 	return d1.dia - d2.dia;
 }
 
@@ -243,28 +262,27 @@ void exibirLogo()
 void limparTela()
 {
 #if SISTEMA_OPERACIONAL == 1
-	system("cls");
+	system("cls");//cls é o comando para limpar tela no windows
 #else
-	system("clear");
+	system("clear");//clear é o comando para limpar tela no linux
 #endif
-	exibirLogo();
+	exibirLogo(); //Exibir logo após limpar a tela
 }
 
-char *
 
 // Função para converter enum Papel para string
-papelParaTexto(Papel papel)
+char *papelParaTexto(Papel papel)
 {
 	switch (papel)
 	{
-	case ADMINISTRADOR:
-		return "administrador";
-	case BIBLIOTECARIO:
-		return "bibliotecário";
-	case LEITOR:
-		return "leitor";
-	default: // Caso não corresponda a nenhum papel conhecido
-		return "desconhecido";
+		case ADMINISTRADOR:
+			return "administrador";
+		case BIBLIOTECARIO:
+			return "bibliotecário";
+		case LEITOR:
+			return "leitor";
+		default: // Caso não corresponda a nenhum papel conhecido
+			return "desconhecido";
 	}
 }
 
@@ -430,8 +448,7 @@ int atualizarLivro()
 	}
 
 	FILE *arquivoLivros = fopen(LIVROS_ARQUIVO, "rb+");
-	if (arquivoLivros == NULL)
-		return 0;
+	if (arquivoLivros == NULL) return 0;
 	fseek(arquivoLivros, sizeof(Livro) * indice, SEEK_SET);
 	fwrite(&livro, sizeof(Livro), 1, arquivoLivros);
 	fclose(arquivoLivros);
@@ -1360,8 +1377,7 @@ void gerarRelatorioMaisEmprestados()
 	int contagemUnica = 0;
 
 	FILE *arquivoEmprestimos = fopen(EMPRESTIMOS_ARQUIVO, "rb");
-	if (!arquivoEmprestimos)
-		return;
+	if (!arquivoEmprestimos) return;
 
 	Emprestimo emprestimo;
 	while (fread(&emprestimo, sizeof(Emprestimo), 1, arquivoEmprestimos))
@@ -1406,7 +1422,7 @@ void gerarRelatorioMaisEmprestados()
 		Livro livro;
 		if (encontrarLivroPorISBN(contagens[i].isbn, &livro) != -1)
 			printf("%-5d %-30s %-20s %d\n", i + 1, livro.titulo, livro.autor,
-				   contagens[i].contagem);
+				contagens[i].contagem);
 	}
 }
 
@@ -1607,14 +1623,14 @@ void menuAdmin(Usuario *usuarioAtual)
 	{
 		printf("\n"
 			   "╔════════════════════════════════════╗\n"
-			   "║ MENU DO ADMINISTRADOR              ║\n"
+			   "║ MENU DO ADMINISTRADOR                    ║\n"
 			   "╠════════════════════════════════════╣\n"
-			   "║ 1. Gerenciar Livros                ║\n"
-			   "║ 2. Gerenciar Usuários              ║\n"
-			   "║ 3. Visualizar Todos os Empréstimos ║\n"
-			   "║ 4. Gerar Relatórios                ║\n"
-			   "║ 5. Visualizar Configurações        ║\n"
-			   "║ 0. Sair                            ║\n"
+			   "║ 1. Gerenciar Livros                      ║\n"
+			   "║ 2. Gerenciar Usuários                    ║\n"
+			   "║ 3. Visualizar Todos os Empréstimos       ║\n"
+			   "║ 4. Gerar Relatórios                      ║\n"
+			   "║ 5. Visualizar Configurações              ║\n"
+			   "║ 0. Sair                                  ║\n"
 			   "╚════════════════════════════════════╝\n"
 			   "Digite a opção: ");
 		scanf("%d", &opcao);
@@ -1630,14 +1646,14 @@ void menuAdmin(Usuario *usuarioAtual)
 			{
 				printf("\n"
 					   "╔════════════════════════════════════╗\n"
-					   "║ Gerenciamento de Livros            ║\n"
+					   "║ Gerenciamento de Livros                  ║\n"
 					   "╠════════════════════════════════════╣\n"
-					   "║ 1. Adicionar Livro                 ║\n"
-					   "║ 2. Atualizar Livro                 ║\n"
-					   "║ 3. Excluir Livro                   ║\n"
-					   "║ 4. Visualizar Todos os Livros      ║\n"
-					   "║ 5. Pesquisar Livros                ║\n"
-					   "║ 0. Voltar                          ║\n"
+					   "║ 1. Adicionar Livro                       ║\n"
+					   "║ 2. Atualizar Livro                       ║\n"
+					   "║ 3. Excluir Livro                         ║\n"
+					   "║ 4. Visualizar Todos os Livros            ║\n"
+					   "║ 5. Pesquisar Livros                      ║\n"
+					   "║ 0. Voltar                                ║\n"
 					   "╚════════════════════════════════════╝\n"
 					   "Digite a opção: ");
 				scanf("%d", &opcaoLivro);
@@ -1672,11 +1688,11 @@ void menuAdmin(Usuario *usuarioAtual)
 			{
 				printf("\n"
 					   "╔════════════════════════════════════╗\n"
-					   "║ Gerenciamento de Usuários          ║\n"
+					   "║ Gerenciamento de Usuários                ║\n"
 					   "╠════════════════════════════════════╣\n"
-					   "║ 1. Registrar Usuário               ║\n"
-					   "║ 2. Visualizar Todos os Usuários    ║\n"
-					   "║ 0. Voltar                          ║\n"
+					   "║ 1. Registrar Usuário                     ║\n"
+					   "║ 2. Visualizar Todos os Usuários          ║\n"
+					   "║ 0. Voltar                                ║\n"
 					   "╚════════════════════════════════════╝\n"
 					   "Digite a opção: ");
 				scanf("%d", &opcaoUsuario);
